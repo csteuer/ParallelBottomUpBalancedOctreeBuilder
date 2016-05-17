@@ -28,7 +28,7 @@ set(sources
     mortoncodetest.cpp  
     octantidtest.cpp  
     octree_utilstest.cpp
-    voxelcoordinateutilstest.cpp
+    vector_utilstest.cpp
 
     unorderedpairmatcher.hpp
 )

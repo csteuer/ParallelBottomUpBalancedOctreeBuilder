@@ -3,14 +3,14 @@
 #include <vector_utils.h>
 #include <box.h>
 
-TEST(VoxelCoordinateUtilsTest, emptyVoxelRangeTest) {
+TEST(VectorUtilsTest, emptyVoxelRangeTest) {
 
     // This tests the iterator as well as empty() and size() methods
     EXPECT_THAT(VectorSpace(Vector3i(0)), ::testing::AllOf(::testing::ElementsAre(), ::testing::IsEmpty(), ::testing::SizeIs(0)));
     EXPECT_THAT(VectorSpace(Vector3i(-1)), ::testing::AllOf(::testing::ElementsAre(), ::testing::IsEmpty(), ::testing::SizeIs(0)));
 }
 
-TEST(VoxelCoordinateUtilsTest, linearVoxelRangeTest) {
+TEST(VectorUtilsTest, linearVoxelRangeTest) {
 
     EXPECT_THAT(VectorSpace(Vector3i(5, 1, 1)), ::testing::AllOf(
                     ::testing::ElementsAre(Vector3i(0, 0, 0), Vector3i(1, 0, 0), Vector3i(2, 0, 0), Vector3i(3, 0, 0), Vector3i(4, 0, 0)),
@@ -25,7 +25,7 @@ TEST(VoxelCoordinateUtilsTest, linearVoxelRangeTest) {
                     ::testing::SizeIs(5)));
 }
 
-TEST(VoxelCoordinateUtilsTest, blockVoxelRangeTest) {
+TEST(VectorUtilsTest, blockVoxelRangeTest) {
 
     EXPECT_THAT(VectorSpace(Vector3i(2, 2, 2)), ::testing::AllOf(
 
@@ -39,7 +39,7 @@ TEST(VoxelCoordinateUtilsTest, blockVoxelRangeTest) {
 
 }
 
-TEST(VoxelCoordinateUtilsTest, boxVoxelRangeTest) {
+TEST(VectorUtilsTest, boxVoxelRangeTest) {
 
     EXPECT_THAT(VectorSpace(Box(Vector3i(0, 0, 0), Vector3i(2, 2, 2))), ::testing::AllOf(
 
@@ -53,7 +53,7 @@ TEST(VoxelCoordinateUtilsTest, boxVoxelRangeTest) {
 
 }
 
-TEST(VoxelCoordinateUtilsTest, closedVoxelRangeTest) {
+TEST(VectorUtilsTest, closedVoxelRangeTest) {
 
     EXPECT_THAT(ClosedVectorSpace(Vector3i(1, 1, 1)), ::testing::AllOf(
 

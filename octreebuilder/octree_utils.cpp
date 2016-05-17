@@ -30,7 +30,7 @@ std::vector<OctantID> getSearchKeys(const OctantID& octant, const LinearOctree& 
     return searchKeys;
 }
 
-LinearOctree propagateRippleInUnbalancedTree(const LinearOctree& octree) {
+LinearOctree balanceTree(const LinearOctree& octree) {
     LinearOctree result = octree;
 
     if (octree.depth() < 3) {
@@ -530,7 +530,7 @@ LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vecto
     STOP_PERF(createBoundaryTreePerf)
 
     START_NEW_PERF_COUNTER(balancePerf)
-    LinearOctree balancedBoundaryTree = propagateRippleInUnbalancedTree(boundaryOctantsTree);
+    LinearOctree balancedBoundaryTree = balanceTree(boundaryOctantsTree);
     STOP_PERF(balancePerf)
 
     START_NEW_PERF_COUNTER(mergePerf)

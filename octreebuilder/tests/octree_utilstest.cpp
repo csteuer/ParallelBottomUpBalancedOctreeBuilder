@@ -115,7 +115,7 @@ TEST(SpaceFillingOctreeUtilsTest, propagateRippleInUnbalancedTreeTest) {
 
     unbalancedOctree.sortAndRemove();
 
-    const LinearOctree balancedTree = propagateRippleInUnbalancedTree(unbalancedOctree);
+    const LinearOctree balancedTree = balanceTree(unbalancedOctree);
 
     ASSERT_EQ(127, balancedTree.leafs().size());
 
@@ -168,7 +168,7 @@ TEST(SpaceFillingOctreeUtilsTest, propagateRippleInIncompleteUnbalancedTreeTest)
 
     unbalancedOctree.sortAndRemove();
 
-    const LinearOctree balancedTree = propagateRippleInUnbalancedTree(unbalancedOctree);
+    const LinearOctree balancedTree = balanceTree(unbalancedOctree);
 
     ASSERT_EQ(113, balancedTree.leafs().size());
 
