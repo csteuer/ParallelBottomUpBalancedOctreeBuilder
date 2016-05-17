@@ -1,0 +1,25 @@
+# Config file for the octreebuilder package
+# It defines the following variables
+#  octreebuilder_INCLUDE_DIRS - include directories for octreebuilder 
+#  octreebuilder_LIBRARIES    - libraries to link against
+ 
+# Compute paths
+get_filename_component(octreebuilder_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(octreebuilder_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET octreebuilder AND NOT octreebuilder_BINARY_DIR)
+  include("${octreebuilder_CMAKE_DIR}/octreebuilderTargets.cmake")
+endif()
+
+foreach(component ${octreebuilder_FIND_COMPONENTS})
+    set(octreebuilder_${component}_FOUND 0)
+endforeach()
+
+foreach(component @EXPORT_TARGETS@)
+    list(FIND octreebuilder_FIND_COMPONENTS ${component} NEEDS_COMPONENT)
+    if (${NEEDS_COMPONENT} GREATER -1)
+        set(octreebuilder_LIBRARIES ${octreebuilder_LIBRARIES} ${component})
+        set(octreebuilder_${component}_FOUND 1)
+    endif()
+endforeach()
