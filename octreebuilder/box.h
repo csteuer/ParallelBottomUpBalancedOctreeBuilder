@@ -16,14 +16,10 @@ public:
     const Vector3i& urb() const;
     Vector3i diagonal() const;
 
-    /**
-     * @brief returns the number of voxels inside the box (voxel == unit cube)
-     * @return the number of voxels inside the box where the voxel at urb is not part of the box (e.g. Box({ 0, 0, 0 }, {0, 0, 0}).volume() == 0)
-     */
     coord_t volume() const;
 
     /**
-     * @brief return true if box contains at least one voxel
+     * @brief return true if the volume is greater than zero
      */
     bool valid() const;
 
@@ -33,9 +29,6 @@ public:
 
     bool contains(const Box& other) const;
 
-    /**
-     * @brief tests wether the bounding box contains the point
-     */
     bool contains(const Vector3i& point) const;
 
 private:

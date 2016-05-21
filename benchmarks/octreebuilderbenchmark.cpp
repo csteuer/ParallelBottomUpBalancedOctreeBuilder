@@ -40,7 +40,7 @@ BENCHMARK_F(OctreeBuilderBenchmark, uniformDistributionBalancedSequentialOctreeB
     for (const Vector3i& leaf : getUniformDistributedInputLeafs()) {
         builder.addLevelZeroLeaf(leaf);
     }
-    builder.finishBuilding(true);
+    builder.finishBuilding();
 }
 
 BENCHMARK_F(OctreeBuilderBenchmark, uniformDistributionBalancedParallelOctreeBuilder, 5, 2) {
@@ -48,5 +48,5 @@ BENCHMARK_F(OctreeBuilderBenchmark, uniformDistributionBalancedParallelOctreeBui
     for (const Vector3i& leaf : getUniformDistributedInputLeafs()) {
         builder.addLevelZeroLeaf(leaf);
     }
-    builder.finishBuilding(true);
+    builder.finishBuilding();
 }

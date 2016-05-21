@@ -12,11 +12,12 @@
 class Octree;
 
 /**
- * @brief Creates a octree with a bottom-up method
+ * @brief Creates a 2:1 balanced octree with a bottom-up method
  *
  * The resulting octree has the following properties:
  *  - it has the minimum number of nodes
  *  - it contains all leaf-nodes added to the builder
+ *  - the level of adjacent octants differs at most by 1 (adjacent = share at least one vertex)
  */
 class OCTREEBUILDER_API OctreeBuilder {
 public:
@@ -37,7 +38,7 @@ public:
      */
     virtual morton_t addLevelZeroLeaf(const Vector3i& c) = 0;
 
-    virtual std::unique_ptr<Octree> finishBuilding(bool balanced = false) = 0;
+    virtual std::unique_ptr<Octree> finishBuilding() = 0;
 
     virtual ~OctreeBuilder();
 

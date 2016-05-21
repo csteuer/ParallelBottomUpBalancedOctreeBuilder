@@ -15,7 +15,7 @@ public:
 
     virtual morton_t addLevelZeroLeaf(const Vector3i& c) override;
 
-    virtual std::unique_ptr<Octree> finishBuilding(bool balanced = false) override;
+    virtual std::unique_ptr<Octree> finishBuilding() override;
 
 private:
     typedef std::unordered_set<morton_t> NodeSet;

@@ -14,7 +14,7 @@
 
 typedef uint64_t morton_t;
 
-// Guarantees that each morton encoded coordinate can be represented by a VoxelCoordinate.
+// Guarantees that each morton encoded coordinate can be represented by a Vector3i (but not vice versa!).
 static_assert(sizeof(morton_t) == sizeof(coord_t), "Data type coord_t must have same size as coord_t.");
 
 /**
@@ -25,14 +25,14 @@ static_assert(sizeof(morton_t) == sizeof(coord_t), "Data type coord_t must have 
 OCTREEBUILDER_API bool fitsInMortonCode(const Vector3i& maxXYZ);
 
 /**
- * @brief computes the depth of an octree that partitions the bounding box (leave octants are voxels with volume 1)
+ * @brief computes the depth of an octree that partitions the bounding box (leave octants are cubes with volume 1)
  * @param maxXYZ the urb of the bounding box with llf (0,0,0)
  * @return the depth of the octree
  */
 OCTREEBUILDER_API uint getOctreeDepthForBounding(const Vector3i& maxXYZ);
 
 /**
- * @brief the urb of the bounding box of the octree (bounding box llf: (0,0,0))
+ * @brief urb of the bounding box of an octree of a given depth
  * @param depth the depth of the octree
  */
 OCTREEBUILDER_API Vector3i getMaxXYZForOctreeDepth(const uint& depth);

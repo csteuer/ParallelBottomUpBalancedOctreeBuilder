@@ -11,15 +11,13 @@
 class LinearOctree;
 
 /**
- * @brief An octree datastructure optimized for spatial queries
+ * @brief An octree datastructure
  *
  * Octree nodes are cubes in the 3d-space.
  * Level zero nodes are of a size 1.
  * The domain/bounding of the octree itself is a cube with the origin (0,0,0) and the side length 2^depth.
- *
  * The octree only contains non overlapping leaf nodes.
- *
- * The level of nodes that share at least one vertex differes by at most 1 if the octree is balanced.
+ * The octree is 2:1 balanced: The level of nodes that share at least one vertex differes by at most 1.
  */
 class OCTREEBUILDER_API Octree {
 public:
@@ -57,18 +55,6 @@ public:
      * @return the specified node or a invalid node if no such node exists
      */
     virtual OctreeNode tryGetNodeAt(const Vector3i& llf, uint level) const = 0;
-
-    /**
-     * @brief returns the node that contains the point (or rather the voxel at that location)
-     */
-    virtual OctreeNode nodeAt(const Vector3i& point) const = 0;
-
-    /**
-     * @brief returns the k nearest nodes to the point
-     *
-     * TODO: Add test
-     */
-    virtual std::vector<OctreeNode> kNearestNodes(const Vector3i& point, const u_int k) const = 0;
 
     /**
      * @brief find the neighbour node(s) of n at sharedFace

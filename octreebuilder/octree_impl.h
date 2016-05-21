@@ -29,10 +29,6 @@ public:
 
     virtual OctreeNode tryGetNodeAt(const Vector3i& llf, uint level) const override;
 
-    virtual OctreeNode nodeAt(const Vector3i& point) const override;
-
-    virtual std::vector<OctreeNode> kNearestNodes(const Vector3i& point, uint k) const override;
-
     virtual std::vector<OctreeNode> getNeighbourNodes(const OctreeNode& n, OctreeNode::Face sharedFace) const override;
 
 private:

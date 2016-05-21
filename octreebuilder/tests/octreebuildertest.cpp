@@ -367,101 +367,6 @@ TYPED_TEST(OctreeBuilderTest, octreeFor2x2x2CubeTest) {
                     NodeMatches(Vector3i(6, 6, 6), 1, 2)})));
 }
 
-TYPED_TEST(OctreeBuilderTest, unbalancedOctreeThreeLevelRefinmentDiagonalLevelDifferenceTest) {
-
-    OctreeBuilder& builder = this->createInstance(Vector3i(7, 7, 7));
-
-    // Add cube leafs
-    morton_t mcode = builder.addLevelZeroLeaf(Vector3i(5, 2, 0));
-
-    std::unique_ptr<Octree> tree(builder.finishBuilding(false));
-
-    ASSERT_THAT(tree, ::testing::NotNull());
-
-    EXPECT_THAT(tree->getMaxXYZ(), ::testing::Eq(Vector3i(7, 7, 7)));
-    EXPECT_THAT(tree->getDepth(), ::testing::Eq(3));
-
-    std::vector<OctreeNode> nodes;
-    for (size_t i = 0; i < tree->getNumNodes(); i++) {
-        nodes.push_back(tree->getNode(i));
-    }
-
-    /* Expected (2D cut):
-      x-y-cut:
-       __ __ __ __ __ __ __ __
-      |           |           |
-      |           |           |
-      |           |           |
-      |__ __ __ __|__ __ __ __|
-      |           |__|__|     |
-      |           |__|X̲X̲|__ __|
-      |           |     |     |
-      |__ __ __ __|__ __|__ __|
-
-      x-z-cut:
-      x-y-cut:
-       __ __ __ __ __ __ __ __
-      |           |           |
-      |           |           |
-      |           |           |
-      |__ __ __ __|__ __ __ __|
-      |           |     |     |
-      |           |__ __|__ __|
-      |           |__|__|     |
-      |__ __ __ __|__|X̲X̲|__ __|
-
-      Where bottom left is (0, 0, 0). Empty cells are of type 0 and cells filled with 'X' are original level zero nodes
-    */
-
-    EXPECT_THAT(nodes, ::testing::WhenSortedBy(&sortByYXZ, ::testing::ElementsAreArray({
-
-                    // y: 0
-                    //  x: 0
-                    NodeMatches(Vector3i(0, 0, 0), 2, 4),
-                    NodeMatches(Vector3i(0, 0, 4), 2, 4),
-
-                    //  x: 4
-                    NodeMatches(Vector3i(4, 0, 0), 1, 2),
-                    NodeMatches(Vector3i(4, 0, 2), 1, 2),
-                    NodeMatches(Vector3i(4, 0, 4), 2, 4),
-
-                    //  x: 6
-                    NodeMatches(Vector3i(6, 0, 0), 1, 2),
-                    NodeMatches(Vector3i(6, 0, 2), 1, 2),
-
-                    // y: 2
-                    //  x: 4
-                    NodeMatches(Vector3i(4, 2, 0), 0, 1),
-                    NodeMatches(Vector3i(4, 2, 1), 0, 1),
-                    NodeMatches(Vector3i(4, 2, 2), 1, 2),
-
-                    //  x: 5
-                    NodeMatches2(Vector3i(5, 2, 0), 0, 1, mcode),
-                    NodeMatches(Vector3i(5, 2, 1), 0, 1),
-
-                    //  x: 6
-                    NodeMatches(Vector3i(6, 2, 0), 1, 2),
-                    NodeMatches(Vector3i(6, 2, 2), 1, 2),
-
-                    // y: 3
-                    //  x: 4
-                    NodeMatches(Vector3i(4, 3, 0), 0, 1),
-                    NodeMatches(Vector3i(4, 3, 1), 0, 1),
-
-                    //  x: 5
-                    NodeMatches(Vector3i(5, 3, 0), 0, 1),
-                    NodeMatches(Vector3i(5, 3, 1), 0, 1),
-
-                    // y: 4
-                    //  x: 0
-                    NodeMatches(Vector3i(0, 4, 0), 2, 4),
-                    NodeMatches(Vector3i(0, 4, 4), 2, 4),
-
-                    //  x: 4
-                    NodeMatches(Vector3i(4, 4, 0), 2, 4),
-                    NodeMatches(Vector3i(4, 4, 4), 2, 4)})));
-}
-
 TYPED_TEST(OctreeBuilderTest, balancedOctreeThreeLevelRefinmentDiagonalLevelDifferenceTest) {
 
     OctreeBuilder& builder = this->createInstance(Vector3i(7, 7, 7));
@@ -469,7 +374,7 @@ TYPED_TEST(OctreeBuilderTest, balancedOctreeThreeLevelRefinmentDiagonalLevelDiff
     // Add cube leafs
     morton_t mcode = builder.addLevelZeroLeaf(Vector3i(5, 2, 0));
 
-    std::unique_ptr<Octree> tree(builder.finishBuilding(true));
+    std::unique_ptr<Octree> tree(builder.finishBuilding());
 
     ASSERT_THAT(tree, ::testing::NotNull());
 

@@ -4,7 +4,7 @@ cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 OLD) # Allow definitions of compile flags via COMPILE_DEFINITIONS_<CONFIG> target properties
 cmake_policy(SET CMP0028 OLD) # Allow colons in target names
 
-set(PROJECTNAME ParallelBottomUpOctreeBuilder)
+set(PROJECTNAME ParallelBottomUpBalancedOctreeBuilder)
 
 project(${PROJECTNAME})
 

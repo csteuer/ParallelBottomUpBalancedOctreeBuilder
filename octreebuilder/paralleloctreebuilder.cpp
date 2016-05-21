@@ -33,7 +33,7 @@ morton_t ParallelOctreeBuilder::addLevelZeroLeaf(const Vector3i& c) {
     return leaf.mcode();
 }
 
-std::unique_ptr<Octree> ParallelOctreeBuilder::finishBuilding(bool) {
+std::unique_ptr<Octree> ParallelOctreeBuilder::finishBuilding() {
     OctantID root(Vector3i(0), getOctreeDepthForBounding(m_maxXYZ));
 
     pss::parallel_stable_sort(m_levelZeroLeafs.begin(), m_levelZeroLeafs.end());

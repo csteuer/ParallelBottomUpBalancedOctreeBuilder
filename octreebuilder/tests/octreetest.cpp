@@ -85,39 +85,6 @@ TEST_F(OctreeTest, tryGetNodeAtTest) {
     EXPECT_FALSE(octree4x4x4->tryGetNodeAt(Vector3i(2), 0).isValid());
 }
 
-TEST_F(OctreeTest, nodeAtTest) {
-    EXPECT_EQ(OctreeNode(0, 0), octree4x4x4->nodeAt(Vector3i(0, 0, 0)));
-    EXPECT_EQ(OctreeNode(0, 0), octree4x4x4->nodeAt(Vector3i(0, 0, 0)));
-}
-
-TEST_F(OctreeTest, kNearestNodeInvalidKTest) {
-
-    EXPECT_THROW(octree4x4x4->kNearestNodes(Vector3i(0, 0, 0), 0), std::invalid_argument);
-}
-
-TEST_F(OctreeTest, kNearestNodeInvalidCoordinateTest) {
-    EXPECT_THROW(octree4x4x4->kNearestNodes(Vector3i(4, 4, 4), 0), std::out_of_range);
-    EXPECT_THROW(octree4x4x4->kNearestNodes(Vector3i(-1, 0, 0), 0), std::out_of_range);
-}
-
-TEST_F(OctreeTest, kNearestNodeAtNodeLLFTest) {
-
-    const auto result = octree4x4x4->kNearestNodes(Vector3i(0, 0, 0), 4);
-
-    ASSERT_THAT(result, ::testing::UnorderedElementsAre(
-                    OctreeNode(Vector3i(0, 0, 0), 0), OctreeNode(Vector3i(1, 0, 0), 0), OctreeNode(Vector3i(0, 1, 0), 0), OctreeNode(Vector3i(0, 0, 1), 0)));
-    ASSERT_EQ(OctreeNode(Vector3i(0, 0, 0), 0), result.front());
-}
-
-TEST_F(OctreeTest, kNearestNodeInsideNodeTest) {
-
-    const auto result = octree4x4x4->kNearestNodes(Vector3i(3, 3, 3), 4);
-
-    ASSERT_THAT(result, ::testing::UnorderedElementsAre(
-                    OctreeNode(Vector3i(2, 2, 0), 1), OctreeNode(Vector3i(2, 0, 2), 1), OctreeNode(Vector3i(0, 2, 2), 1), OctreeNode(Vector3i(1, 1, 1), 0)));
-    ASSERT_EQ(OctreeNode(Vector3i(1, 1, 1), 0), result.back());
-}
-
 static OctreeNode findNodeWithLLF(const std::vector<OctreeNode>& nodes, const Vector3i& llf) {
     auto it = std::find_if(nodes.begin(), nodes.end(), [&llf](const OctreeNode& n) {
         return n.getLLF() == llf;

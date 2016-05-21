@@ -82,14 +82,6 @@ OctreeNode OctreeImpl::tryGetNodeAt(const Vector3i& llf, uint level) const {
     return OctreeNode();
 }
 
-OctreeNode OctreeImpl::nodeAt(const Vector3i&) const {
-    return OctreeNode();
-}
-
-std::vector<OctreeNode> OctreeImpl::kNearestNodes(const Vector3i&, uint) const {
-    return {};
-}
-
 std::vector<OctreeNode> OctreeImpl::getNeighbourNodes(const OctreeNode& n, OctreeNode::Face sharedFace) const {
     std::vector<OctreeNode> neighbourNodes;
 

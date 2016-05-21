@@ -41,11 +41,6 @@ public:
     morton_t getMortonEncodedLLF() const;
 
     /**
-     * @brief the stable index of the node (just the morton encoded llf)
-     */
-    coord_t getStableIndex() const;
-
-    /**
      * @brief the side legth of the cuboid represent by this node
      */
     coord_t getSize() const;

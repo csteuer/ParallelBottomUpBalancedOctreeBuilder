@@ -69,7 +69,7 @@ void SequentialOctreeBuilder::createSiblingsAndGuardNodes(const morton_t current
     }
 }
 
-std::unique_ptr<Octree> SequentialOctreeBuilder::finishBuilding(bool) {
+std::unique_ptr<Octree> SequentialOctreeBuilder::finishBuilding() {
     // Creates a SpaceFillingOctree in a bottom-up method:
     //  We iterate of each level (starting with the leafs).
     //  In each iteration we add the siblings of all non empty nodes.

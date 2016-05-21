@@ -42,10 +42,6 @@ morton_t OctreeNode::getMortonEncodedLLF() const {
     return m_morton_llf;
 }
 
-coord_t OctreeNode::getStableIndex() const {
-    return static_cast<coord_t>(m_morton_llf);
-}
-
 coord_t OctreeNode::getSize() const {
     return getOctantSizeForLevel(m_level);
 }
