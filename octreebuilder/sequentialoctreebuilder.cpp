@@ -9,10 +9,7 @@
 #include <assert.h>
 #include <stack>
 
-#include "perfinfo.h"
-
-SequentialOctreeBuilder::SequentialOctreeBuilder(const Vector3i& maxXYZ, size_t numLevelZeroLeafsHint, uint maxLevel)
-    : OctreeBuilder(maxXYZ, maxLevel) {
+SequentialOctreeBuilder::SequentialOctreeBuilder(const Vector3i& maxXYZ, size_t numLevelZeroLeafsHint, uint maxLevel) : OctreeBuilder(maxXYZ, maxLevel) {
     if (!fitsInMortonCode(maxXYZ)) {
         throw std::runtime_error("Space to large for octree creation.");
     }
@@ -80,9 +77,6 @@ std::unique_ptr<Octree> SequentialOctreeBuilder::finishBuilding(bool) {
     //  The parent nodes of the inserted leaf-nodes then become the non-empty nodes in the next level.
     //  Furthermore we add guard nodes (explained below) to ensure a level difference of 1
 
-    START_NEW_PERF_COUNTER(overallPerf)
-    START_NEW_PERF_COUNTER(createPerf)
-    START_NEW_PERF_COUNTER(initPerf)
     m_tree = std::vector<std::unordered_set<morton_t>>(m_depth + 1);
     uint currentLevel = 0;
     m_finalLevel = std::min(maxLevel(), m_depth);
@@ -90,9 +84,7 @@ std::unique_ptr<Octree> SequentialOctreeBuilder::finishBuilding(bool) {
     for (const morton_t p : m_nonEmptyNodesOfCurrentLevel) {
         insertIntoTree(p, currentLevel);
     }
-    STOP_PERF(initPerf)
 
-    NEW_PERF_COUNTER(createNodesOfCurrentLevelPerf)
     for (; currentLevel < m_finalLevel; currentLevel++) {
         m_nonEmptyParentNodesOfCurrentLevel.clear();
 
@@ -100,16 +92,12 @@ std::unique_ptr<Octree> SequentialOctreeBuilder::finishBuilding(bool) {
         // Either these nodes (which are of the next level) or their child nodes must exist in the tree.
         m_guardNodesOfCurrentLevel.clear();
 
-        RESUME_PERF(createNodesOfCurrentLevelPerf) {
-            NodeSet nonEmptyNodes = m_nonEmptyNodesOfCurrentLevel;
+        NodeSet nonEmptyNodes = m_nonEmptyNodesOfCurrentLevel;
 
-            // add the siblings of all non empty nodes
-            for (const NodeSet::value_type& current_node : nonEmptyNodes) {
-                createSiblingsAndGuardNodes(current_node, currentLevel);
-            }
+        // add the siblings of all non empty nodes
+        for (const NodeSet::value_type& current_node : nonEmptyNodes) {
+            createSiblingsAndGuardNodes(current_node, currentLevel);
         }
-        STOP_PERF(createNodesOfCurrentLevelPerf)
-
 
         // Add the guard nodes
         for (const morton_t guard : m_guardNodesOfCurrentLevel) {
@@ -143,20 +131,8 @@ std::unique_ptr<Octree> SequentialOctreeBuilder::finishBuilding(bool) {
             }
         }
     }
-    STOP_PERF(createPerf)
-
-    START_NEW_PERF_COUNTER(createSFOPerf)
 
     std::unique_ptr<Octree> result(new OctreeImpl(std::move(m_tree)));
-
-    STOP_PERF(createSFOPerf)
-    STOP_PERF(overallPerf)
-
-    LOG_PERF("finishBuilding(" << overallPerf << "):")
-    LOG_PERF(" Create: " << createPerf)
-    LOG_PERF("  Init: " << initPerf)
-    LOG_PERF("  Create Nodes: " << createNodesOfCurrentLevelPerf)
-    LOG_PERF(" SpaceFillingOctree: " << createSFOPerf)
 
     return result;
 }

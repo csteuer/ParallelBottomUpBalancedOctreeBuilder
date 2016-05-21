@@ -16,13 +16,9 @@ public:
     explicit ParallelOctreeBuilder(const Vector3i& maxXYZ, size_t numLevelZeroLeafsHint = 0, uint maxLevel = std::numeric_limits<uint>::max());
 
     virtual morton_t addLevelZeroLeaf(const Vector3i& c) override;
-    virtual std::unique_ptr<Octree> finishBuilding(bool) override;
-
-    bool parallel() const;
-    void setParallel(bool parallel);
+    virtual std::unique_ptr<Octree> finishBuilding(bool balanced = false) override;
 
 private:
-    bool m_parallel;
     std::unordered_set<morton_t> m_levelZeroLeafsSet;
     std::vector<OctantID> m_levelZeroLeafs;
 };

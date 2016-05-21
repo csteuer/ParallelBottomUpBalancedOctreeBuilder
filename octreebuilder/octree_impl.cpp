@@ -13,7 +13,6 @@
 #include "linearoctree.h"
 #include "octantid.h"
 #include "parallel_stable_sort.h"
-#include "perfinfo.h"
 
 OctreeImpl::OctreeImpl(std::vector<std::unordered_set<morton_t>> tree) : m_tree(std::move(tree)), m_bounding(Box(getMaxXYZForOctreeDepth(getDepth()))) {
     for (uint l = 0; l < m_tree.size(); l++) {
@@ -27,26 +26,16 @@ OctreeImpl::OctreeImpl(std::vector<std::unordered_set<morton_t>> tree) : m_tree(
 }
 
 OctreeImpl::OctreeImpl(const LinearOctree& linearOctree) : m_bounding(Box(getMaxXYZForOctreeDepth(linearOctree.depth()))) {
-    START_NEW_PERF_COUNTER(allocatePerf)
     m_tree = std::vector<std::unordered_set<morton_t>>(linearOctree.depth() + 1);
     m_nodeList.reserve(linearOctree.leafs().size());
-    STOP_PERF(allocatePerf)
 
-    START_NEW_PERF_COUNTER(insertTreePerf)
     for (const OctantID& node : linearOctree.leafs()) {
         m_tree.at(node.level()).insert(node.mcode());
     }
-    STOP_PERF(insertTreePerf)
 
-    START_NEW_PERF_COUNTER(insertListPerf)
     for (const OctantID& node : linearOctree.leafs()) {
         m_nodeList.push_back(std::make_pair(node.mcode(), node.level()));
     }
-    STOP_PERF(insertListPerf)
-
-    LOG_PERF("SpaceFillingOctree:  Allocate: " << allocatePerf)
-    LOG_PERF("SpaceFillingOctree:  InsertTree: " << insertTreePerf)
-    LOG_PERF("SpaceFillingOctree:  InsertList: " << insertListPerf)
 }
 
 Vector3i OctreeImpl::getMaxXYZ() const {
@@ -97,7 +86,7 @@ OctreeNode OctreeImpl::nodeAt(const Vector3i&) const {
     return OctreeNode();
 }
 
-std::vector<OctreeNode> OctreeImpl::kNearestNodes(const Vector3i&) const {
+std::vector<OctreeNode> OctreeImpl::kNearestNodes(const Vector3i&, uint) const {
     return {};
 }
 

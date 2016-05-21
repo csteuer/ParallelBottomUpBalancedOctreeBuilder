@@ -15,7 +15,6 @@ set(SOURCES
     octantid.cpp
     octree_utils.cpp
     paralleloctreebuilder.cpp
-    perfinfo.cpp
     sequentialoctreebuilder.cpp
     vector3i.cpp
     vector_utils.cpp
@@ -43,7 +42,6 @@ set(HEADER
     octree_impl.h
     octree_utils.h
     parallel_stable_sort.h
-    perfinfo.h
 )
 
 add_library(${target} ${LIBRARY_TYPE} ${HEADER} ${SOURCES})
@@ -75,6 +73,8 @@ set_target_properties(${target}
 
 
 target_compile_options(${target} PRIVATE "${DEFAULT_COMPILE_FLAGS}")
+
+target_link_libraries(${target} ${TCMALLOC_LIBRARIES})
 
 IF (BUILD_TESTS)
     add_subdirectory(tests)

@@ -16,7 +16,6 @@ set(sources
     ../octantid.cpp
     ../octree_utils.cpp
     ../paralleloctreebuilder.cpp
-    ../perfinfo.cpp
     ../sequentialoctreebuilder.cpp
     ../vector3i.cpp
     ../vector_utils.cpp
@@ -51,6 +50,7 @@ set_target_properties(${target}
 target_link_libraries(${target}
     gmock
     gmock_main
+    ${TCMALLOC_LIBRARIES}
 )
 
 

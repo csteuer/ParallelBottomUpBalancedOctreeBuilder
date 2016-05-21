@@ -65,8 +65,10 @@ public:
 
     /**
      * @brief returns the k nearest nodes to the point
+     *
+     * TODO: Add test
      */
-    virtual std::vector<OctreeNode> kNearestNodes(const Vector3i& point) const = 0;
+    virtual std::vector<OctreeNode> kNearestNodes(const Vector3i& point, const u_int k) const = 0;
 
     /**
      * @brief find the neighbour node(s) of n at sharedFace

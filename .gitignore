@@ -3,3 +3,5 @@ CMakeLists.txt.*
 install/
 buildRelease/
 googletest/
+cppcheck_report/
+cppcheck_result.xml

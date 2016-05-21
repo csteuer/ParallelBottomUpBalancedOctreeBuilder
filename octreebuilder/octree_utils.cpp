@@ -4,8 +4,6 @@
 #include <algorithm>
 #include <array>
 
-#include "perfinfo.h"
-
 #include "octantid.h"
 #include "linearoctree.h"
 
@@ -474,48 +472,25 @@ static LinearOctree mergePartitionsAndBalancedBoundaryTree(const std::vector<Oct
 }
 
 LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vector<OctantID>& levelZeroLeafs, int numThreads, uint maxLevel) {
-    START_NEW_PERF_COUNTER(overallPerf)
-
-    START_NEW_PERF_COUNTER(partitionPerf)
     Partition computedPartition = computePartition(root, levelZeroLeafs, numThreads);
-    STOP_PERF(partitionPerf);
 
     std::vector<LinearOctree>& partitions = computedPartition.partitions;
     LinearOctree boundaryOctantsTree(computedPartition.root);
 
     std::vector<std::vector<OctantID>> boundaryOctantsPerPartition(partitions.size());
 
-    PERF(std::vector<PerfInfo> perfInfos(partitions.size()))
-    NEW_PERF_COUNTER(createBalancedSubtreePerf)
-    NEW_PERF_COUNTER(collectBoundaryLeafsPerf)
-    START_NEW_PERF_COUNTER(createBlocksPerf) {
-        START_PERF(createBalancedSubtreePerf);
 #pragma omp parallel for schedule(dynamic, 1)
-        for (size_t i = 0; i < partitions.size(); i++) {
-            START_NEW_PERF_COUNTER_3(pinfo, i, partitions.at(i).leafs().size())
-            createBalancedSubtree(partitions.at(i), maxLevel);
-            STOP_PERF(pinfo)
-            PERF(perfInfos.at(i) = pinfo)
-        }
-        STOP_PERF(createBalancedSubtreePerf)
-
-        START_PERF(collectBoundaryLeafsPerf)
-#pragma omp parallel for schedule(dynamic, 1)
-        for (size_t i = 0; i < partitions.size(); i++) {
-            RESUME_PERF(perfInfos.at(i))
-
-            const LinearOctree& currentPartition = partitions.at(i);
-            std::vector<OctantID>& boundaryOctants = boundaryOctantsPerPartition.at(i);
-
-            collectBoundaryLeafs(currentPartition, boundaryOctantsTree, boundaryOctants);
-
-            STOP_PERF(perfInfos.at(i))
-        }
-        STOP_PERF(collectBoundaryLeafsPerf)
+    for (size_t i = 0; i < partitions.size(); i++) {
+        createBalancedSubtree(partitions.at(i), maxLevel);
     }
-    STOP_PERF(createBlocksPerf);
 
-    START_NEW_PERF_COUNTER(createBoundaryTreePerf)
+#pragma omp parallel for schedule(dynamic, 1)
+    for (size_t i = 0; i < partitions.size(); i++) {
+        const LinearOctree& currentPartition = partitions.at(i);
+        std::vector<OctantID>& boundaryOctants = boundaryOctantsPerPartition.at(i);
+
+        collectBoundaryLeafs(currentPartition, boundaryOctantsTree, boundaryOctants);
+    }
 
     std::unordered_set<morton_t> boundaryOctantsCodeSet;
 
@@ -527,28 +502,10 @@ LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vecto
             boundaryOctantsCodeSet.insert(octant.mcode());
         }
     }
-    STOP_PERF(createBoundaryTreePerf)
 
-    START_NEW_PERF_COUNTER(balancePerf)
     LinearOctree balancedBoundaryTree = balanceTree(boundaryOctantsTree);
-    STOP_PERF(balancePerf)
 
-    START_NEW_PERF_COUNTER(mergePerf)
     LinearOctree result = mergePartitionsAndBalancedBoundaryTree(flattenPartitions(partitions), balancedBoundaryTree, boundaryOctantsCodeSet);
-    STOP_PERF(mergePerf)
-
-    STOP_PERF(overallPerf)
-
-    LOG_PERF("createBalancedOctreeParallel: createBalancedOctreeParallel( " << overallPerf << " ):")
-    LOG_PERF("createBalancedOctreeParallel:  Partition: " << partitionPerf)
-    LOG_PERF("createBalancedOctreeParallel:  CreateBlocks: " << createBlocksPerf)
-    LOG_PERF("createBalancedOctreeParallel:   CreateBalancedSubtrees: " << createBalancedSubtreePerf)
-    LOG_PERF("createBalancedOctreeParallel:   CollectBoundaryLeafs: " << collectBoundaryLeafsPerf)
-    LOG_PERF("createBalancedOctreeParallel:  Per Partition:")
-    FOR_LOG_PERF("createBalancedOctreeParallel:   ", perfInfos)
-    LOG_PERF("createBalancedOctreeParallel:  CreateBoundaryTree: " << createBoundaryTreePerf)
-    LOG_PERF("createBalancedOctreeParallel:  Balance: " << balancePerf)
-    LOG_PERF("createBalancedOctreeParallel:  Merge: " << mergePerf)
 
     return result;
 }

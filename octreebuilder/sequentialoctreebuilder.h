@@ -3,6 +3,8 @@
 #include "octreebuilder_api.h"
 #include "octreebuilder.h"
 
+#include <unordered_set>
+
 class OCTREEBUILDER_API SequentialOctreeBuilder : public OctreeBuilder {
 public:
     /**
@@ -13,7 +15,7 @@ public:
 
     virtual morton_t addLevelZeroLeaf(const Vector3i& c) override;
 
-    virtual std::unique_ptr<Octree> finishBuilding(bool) override;
+    virtual std::unique_ptr<Octree> finishBuilding(bool balanced = false) override;
 
 private:
     typedef std::unordered_set<morton_t> NodeSet;

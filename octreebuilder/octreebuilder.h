@@ -6,8 +6,6 @@
 
 #include "mortoncode.h"
 
-#include <unordered_map>
-#include <unordered_set>
 #include <memory>
 #include <limits>
 

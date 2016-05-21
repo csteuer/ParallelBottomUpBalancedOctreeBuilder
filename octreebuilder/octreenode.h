@@ -12,6 +12,7 @@ class OCTREEBUILDER_API OctreeNode {
 public:
     OctreeNode();
     OctreeNode(morton_t morton_encoded_llf, uint level);
+    OctreeNode(const Vector3i& coordinate, uint level);
 
     /**
      * @brief The faces of an octree node

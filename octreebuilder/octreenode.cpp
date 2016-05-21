@@ -6,8 +6,10 @@
 OctreeNode::OctreeNode() : m_morton_llf(std::numeric_limits<morton_t>::max()), m_level(std::numeric_limits<uint>::max()) {
 }
 
-OctreeNode::OctreeNode(morton_t morton_encoded_llf, uint level)
-    : m_morton_llf(morton_encoded_llf), m_level(level) {
+OctreeNode::OctreeNode(morton_t morton_encoded_llf, uint level) : m_morton_llf(morton_encoded_llf), m_level(level) {
+}
+
+OctreeNode::OctreeNode(const Vector3i& coordinate, uint level) : m_morton_llf(getMortonCodeForCoordinate(coordinate)), m_level(level) {
 }
 
 Vector3i OctreeNode::getNormalOfFace(const OctreeNode::Face& f) {
