@@ -61,17 +61,6 @@ IF(BUILD_TESTS)
 ENDIF()
 
 ##########################################################################################################
-# Benchmarks (with hayai)
-##########################################################################################################
-
-option(BUILD_BENCHMARKS "Builds the benchmark tests" OFF)
-
-IF(BUILD_BENCHMARKS)
-    find_package(hayai REQUIRED)
-    add_subdirectory(benchmarks)
-ENDIF()
-
-##########################################################################################################
 # Profiling & Performance optimization
 ##########################################################################################################
 
@@ -91,6 +80,17 @@ if ((NOT ENABLE_PROFILING) AND BUILD_WITH_TCMALLOC)
         message(WARNING "BUILD_WITH_TCMALLOC is TRUE but could not find tcmalloc_minimal. Will use default malloc.")
     endif()
 endif()
+
+##########################################################################################################
+# Benchmarks (with hayai)
+##########################################################################################################
+
+option(BUILD_BENCHMARKS "Builds the benchmark tests" OFF)
+
+IF(BUILD_BENCHMARKS)
+    find_package(hayai REQUIRED)
+    add_subdirectory(benchmarks)
+ENDIF()
 
 ##########################################################################################################
 # Other options

@@ -39,5 +39,7 @@ endif()
 
 target_link_libraries(${target}
     ${HAYAI_LIBRARIES}
+    ${GPERFTOOLS_LIBRARIES}
+    ${TCMALLOC_LIBRARIES}
     octreebuilder
 )

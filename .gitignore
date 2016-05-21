@@ -5,3 +5,4 @@ buildRelease/
 googletest/
 cppcheck_report/
 cppcheck_result.xml
+buildProfiling/

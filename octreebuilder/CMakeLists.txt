@@ -74,7 +74,7 @@ set_target_properties(${target}
 
 target_compile_options(${target} PRIVATE "${DEFAULT_COMPILE_FLAGS}")
 
-target_link_libraries(${target} ${TCMALLOC_LIBRARIES})
+target_link_libraries(${target} ${TCMALLOC_LIBRARIES} ${GPERFTOOLS_LIBRARIES})
 
 IF (BUILD_TESTS)
     add_subdirectory(tests)
