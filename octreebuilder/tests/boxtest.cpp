@@ -1,7 +1,5 @@
 #include <gmock/gmock.h>
 
-#include "unorderedpairmatcher.hpp"
-
 #include <box.h>
 
 TEST(BoxTest, equalityTest) {

@@ -7,6 +7,10 @@
 #include <vector>
 #include <random>
 
+#ifdef PROFILING_ENABLED
+#include <gperftools/profiler.h>
+#endif
+
 constexpr size_t SEED = 12492;
 constexpr size_t NUM_INPUT_LEAFS = 10000;
 constexpr coord_t MAX_COORD = 1000;
@@ -24,10 +28,20 @@ public:
         for (size_t i = 0; i < NUM_INPUT_LEAFS; i++) {
             m_uniformDistributedInputLeafs.push_back(Vector3i(genCoord(), genCoord(), genCoord()));
         }
+
+#ifdef PROFILING_ENABLED
+        ProfilerStart("OctreeBuilderBenchmark.prof");
+#endif
     }
 
     const std::vector<Vector3i>& getUniformDistributedInputLeafs() const {
         return m_uniformDistributedInputLeafs;
+    }
+
+    ~OctreeBuilderBenchmark()  {
+#ifdef PROFILING_ENABLED
+        ProfilerStop();
+#endif
     }
 
 private:

@@ -72,19 +72,32 @@ IF(BUILD_BENCHMARKS)
 ENDIF()
 
 ##########################################################################################################
-# Options
+# Profiling & Performance optimization
 ##########################################################################################################
 
-# Default cmake variable that is overwritten by gmock/gtest
-option(BUILD_SHARED_LIBS "Build shared octreebuilder/gmock/gtest libraries (builds static libraries otherwise)." OFF)
+option(ENABLE_PROFILING "Links against google performance tools (Gperftools) to enable profiling." OFF)
+if (ENABLE_PROFILING)
+    find_package(Gperftools REQUIRED)
+    include_directories(GPERFTOOLS_INCLUDE_DIR)
+    add_definitions(-DPROFILING_ENABLED)
+endif()
 
 option(BUILD_WITH_TCMALLOC "Uses googles TCMALLOC (which is faster than malloc) if found." ON)
-if (BUILD_WITH_TCMALLOC)
+if ((NOT ENABLE_PROFILING) AND BUILD_WITH_TCMALLOC)
+    # If profiling is enabled TCMALLOC is linked anyway.
+    # In contrast to find_package(Gperftools REQUIRED) this will find the minimal tcmalloc version (without heap checker and profiler)
     find_package(TCMALLOC)
     if (NOT TCMALLOC_FOUND)
         message(WARNING "BUILD_WITH_TCMALLOC is TRUE but could not find tcmalloc_minimal. Will use default malloc.")
     endif()
 endif()
+
+##########################################################################################################
+# Other options
+##########################################################################################################
+
+# Default cmake variable that is overwritten by gmock/gtest
+option(BUILD_SHARED_LIBS "Build shared octreebuilder/gmock/gtest libraries (builds static libraries otherwise)." OFF)
 
 ##########################################################################################################
 # Install definitions
