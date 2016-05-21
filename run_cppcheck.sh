@@ -1,0 +1,2 @@
+cppcheck octreebuilder/ -ioctreebuilder/tests --enable=all --xml --suppress=missingIncludeSystem 2> cppcheck_result.xml
+python cppcheck-htmlreport.py --title PCFDSimulator --file=cppcheck_result.xml --report-dir=cppcheck_report
