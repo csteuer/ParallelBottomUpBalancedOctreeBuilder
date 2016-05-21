@@ -48,7 +48,7 @@ option(BUILD_TESTS "Builds the tests" OFF)
 
 IF(BUILD_TESTS)
 	SET(gtest_force_shared_crt TRUE) # For Visual C++: Force Gtest to link against shared runtime library (so that we can compile with /MD)
-	ADD_DEFINITIONS("-DGTEST_LANG_CXX11")
+	add_definitions("-DGTEST_LANG_CXX11")
 	add_subdirectory(googletest)
 	enable_testing()
 
@@ -78,6 +78,14 @@ ENDIF()
 # Default cmake variable that is overwritten by gmock/gtest
 option(BUILD_SHARED_LIBS "Build shared octreebuilder/gmock/gtest libraries (builds static libraries otherwise)." OFF)
 
+option(BUILD_WITH_TCMALLOC "Uses googles TCMALLOC (which is faster than malloc) if found." ON)
+if (BUILD_WITH_TCMALLOC)
+    find_package(TCMALLOC)
+    if (NOT TCMALLOC_FOUND)
+        message(WARNING "BUILD_WITH_TCMALLOC is TRUE but could not find tcmalloc_minimal. Will use default malloc.")
+    endif()
+endif()
+
 ##########################################################################################################
 # Install definitions
 ##########################################################################################################
@@ -102,9 +110,7 @@ function(install_module target)
 
 
     foreach(file ${PUBLIC_HEADER})
-        file(RELATIVE_PATH subpath "${CMAKE_CURRENT_SOURCE_DIR}/include/octreebuilder" "${CMAKE_CURRENT_SOURCE_DIR}/${file}")
-        get_filename_component(subpath ${subpath} DIRECTORY)
-        install(FILES ${file} DESTINATION ${INSTALL_INCLUDE_DIR}/octreebuilder/${subpath})
+        install(FILES ${file} DESTINATION ${INSTALL_INCLUDE_DIR}/octreebuilder)
         set(API_HEADER ${API_HEADER} ${CMAKE_CURRENT_SOURCE_DIR}/${file} CACHE INTERNAL "The header files of the public api.")
     endforeach()
 
