@@ -18,6 +18,7 @@ set(SOURCES
     sequentialoctreebuilder.cpp
     vector3i.cpp
     vector_utils.cpp
+    perfcounter.cpp
 )
 
 set(PUBLIC_HEADER
@@ -42,6 +43,7 @@ set(HEADER
     octree_impl.h
     octree_utils.h
     parallel_stable_sort.h
+    perfcounter.h
 )
 
 add_library(${target} ${LIBRARY_TYPE} ${HEADER} ${SOURCES})
