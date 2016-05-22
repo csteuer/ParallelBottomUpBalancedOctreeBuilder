@@ -68,6 +68,12 @@ private:
 OCTREEBUILDER_API VectorSpace ClosedVectorSpace(const Vector3i& start, const Vector3i& end);
 
 /**
+ * @brief creates a voxel range from box (end is inclusive => [llf, urb] )
+ * @param box the bounding box
+ */
+OCTREEBUILDER_API VectorSpace ClosedVectorSpace(const Box& box);
+
+/**
  * @brief creates a voxel range from (0,0,0) to end (end is inclusive => [(0,0,0), end] )
  * @param end the end of the voxel range
  */

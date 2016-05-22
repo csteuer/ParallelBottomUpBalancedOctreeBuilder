@@ -4,15 +4,6 @@
 #include <limits>
 #include <ostream>
 
-Box::Box() : m_llf(Vector3i(std::numeric_limits<coord_t>::max())), m_urb(std::numeric_limits<coord_t>::min()) {
-}
-
-Box::Box(const Vector3i& llf, const Vector3i& urb) : m_llf(llf), m_urb(urb) {
-}
-
-Box::Box(const Vector3i& urb) : m_llf(Vector3i(0)), m_urb(urb) {
-}
-
 const Vector3i& Box::llf() const {
     return m_llf;
 }
