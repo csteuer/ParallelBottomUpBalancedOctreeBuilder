@@ -19,6 +19,7 @@ set(sources
     ../sequentialoctreebuilder.cpp
     ../vector3i.cpp
     ../vector_utils.cpp
+    ../perfcounter.cpp
 
     octreebuildertest.cpp
     octreetest.cpp
