@@ -6,36 +6,56 @@
 #include <algorithm>
 #include <functional>
 
+#include "perfcounter.h"
 #include "logging.h"
+#include <iomanip>
 
 #include "box.h"
 
 #include "linearoctree.h"
 #include "octantid.h"
-#include "parallel_stable_sort.h"
 
 OctreeImpl::OctreeImpl(std::vector<std::unordered_set<morton_t>> tree) : m_tree(std::move(tree)), m_bounding(Box(getMaxXYZForOctreeDepth(getDepth()))) {
+    size_t numLeafs = 0;
+    for (const auto& leafSet : tree) {
+        numLeafs += leafSet.size();
+    }
+
+    m_linearTree = LinearOctree(OctantID(0, getDepth()), numLeafs);
+
     for (uint l = 0; l < m_tree.size(); l++) {
         for (const morton_t& mcode : m_tree.at(l)) {
-            m_nodeList.push_back(std::make_pair(mcode, l));
+            m_linearTree.insert(OctantID(mcode, l));
         }
     }
 
-    pss::parallel_stable_sort(m_nodeList.begin(), m_nodeList.end(),
-                              [](const std::pair<morton_t, uint>& l, const std::pair<morton_t, uint>& r) { return l.first < r.first; });
+    m_linearTree.sortAndRemove();
 }
 
-OctreeImpl::OctreeImpl(const LinearOctree& linearOctree) : m_bounding(Box(getMaxXYZForOctreeDepth(linearOctree.depth()))) {
-    m_tree = std::vector<std::unordered_set<morton_t>>(linearOctree.depth() + 1);
-    m_nodeList.reserve(linearOctree.leafs().size());
+OctreeImpl::OctreeImpl(LinearOctree&& linearOctree) : m_bounding(Box(getMaxXYZForOctreeDepth(linearOctree.depth()))) {
+    PerfCounter perfCounter;
 
+    perfCounter.start();
+    m_tree = std::vector<std::unordered_set<morton_t>>(linearOctree.depth() + 1);
+    {
+        std::vector<size_t> numLeafsPerLevel(linearOctree.depth() + 1, 0);
+        for (const OctantID& node : linearOctree.leafs()) {
+            numLeafsPerLevel.at(node.level())++;
+        }
+
+        for (size_t i = 0; i < m_tree.size(); i++) {
+            m_tree.at(i).reserve(numLeafsPerLevel.at(i));
+        }
+    }
+    LOG_PROF(std::left << std::setw(30) << "Allocated set tree: " << perfCounter);
+
+    perfCounter.start();
     for (const OctantID& node : linearOctree.leafs()) {
         m_tree.at(node.level()).insert(node.mcode());
     }
+    LOG_PROF(std::left << std::setw(30) << "Filled set tree: " << perfCounter);
 
-    for (const OctantID& node : linearOctree.leafs()) {
-        m_nodeList.push_back(std::make_pair(node.mcode(), node.level()));
-    }
+    m_linearTree = std::move(linearOctree);
 }
 
 Vector3i OctreeImpl::getMaxXYZ() const {
@@ -47,23 +67,27 @@ uint OctreeImpl::getDepth() const {
 }
 
 uint OctreeImpl::getMaxLevel() const {
-    for (int level = getDepth(); level >= 0; level--) {
+    for (uint level = getDepth(); level > 0; level--) {
         if (!m_tree.at(level).empty()) {
-            return static_cast<uint>(level);
+            return level;
         }
+    }
+
+    if (!m_tree.empty() && !m_tree.front().empty()) {
+        return 0;
     }
 
     throw std::runtime_error("Can't determine the maximum level of an empty octree.");
 }
 
 size_t OctreeImpl::getNumNodes() const {
-    return m_nodeList.size();
+    return m_linearTree.leafs().size();
 }
 
 OctreeNode OctreeImpl::getNode(const size_t& i) const {
-    const std::pair<morton_t, uint>& mcodeLevelPair = m_nodeList.at(i);
+    const OctantID& octant = m_linearTree.leafs().at(i);
 
-    OctreeNode n(mcodeLevelPair.first, mcodeLevelPair.second);
+    OctreeNode n(octant.mcode(), octant.level());
 
     return n;
 }

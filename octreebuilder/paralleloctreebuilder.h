@@ -20,5 +20,4 @@ public:
 
 private:
     std::unordered_set<morton_t> m_levelZeroLeafsSet;
-    std::vector<OctantID> m_levelZeroLeafs;
 };

@@ -2,7 +2,6 @@
 
 #include "octreebuilder_api.h"
 
-
 #include <vector>
 #include <unordered_map>
 #include <iosfwd>
@@ -19,8 +18,24 @@ class OCTREEBUILDER_API LinearOctree {
 public:
     typedef std::vector<OctantID> container_type;
 
+    /**
+     * @brief creates a minimal empty linear octree (can't contain any leafs)
+     */
     LinearOctree();
-    LinearOctree(const OctantID& m_root, const container_type& leafs = {});
+
+    /**
+     * @brief creates an linear octree
+     * @param root the root of the octree
+     * @param leafs the leafs of the octree
+     */
+    LinearOctree(const OctantID& root, const container_type& leafs = {});
+
+    /**
+     * @brief creates an empty linear octree
+     * @param root the root of the octree
+     * @param numLeafs the expected number of leafs (preallocates space for numLeafs)
+     */
+    LinearOctree(const OctantID& root, const size_t& numLeafs);
 
     /**
      * @brief the root of the tree.
@@ -114,6 +129,11 @@ public:
      * @brief sorts the stored octants in ascending order by their id and erases all octants that where marked for removal.
      */
     void sortAndRemove();
+
+    /**
+     * @brief attempt to preallocate enough memory for specified number of leafs.
+     */
+    void reserve(const size_t numLeafs);
 
 private:
     OctantID m_root;

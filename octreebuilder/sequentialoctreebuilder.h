@@ -18,15 +18,5 @@ public:
     virtual std::unique_ptr<Octree> finishBuilding() override;
 
 private:
-    typedef std::unordered_set<morton_t> NodeSet;
-    void insertIntoTree(const morton_t& node, const uint& level);
-    void createSiblingsAndGuardNodes(const morton_t current_node, const uint currentLevel);
-
-    std::vector<std::unordered_set<morton_t>> m_tree;
-
-    NodeSet m_nonEmptyNodesOfCurrentLevel;
-    NodeSet m_nonEmptyParentNodesOfCurrentLevel;
-    NodeSet m_guardNodesOfCurrentLevel;
-    uint m_finalLevel;
-    uint m_depth;
+    std::unordered_set<morton_t> m_levelZeroLeafsSet;
 };

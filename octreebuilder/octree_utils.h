@@ -63,7 +63,7 @@ struct Partition {
  * @param numThreads the number of threads used for parallel creation
  * @return a partition of the incomplete octree. Each subtree contains the level zero leafs inside its bounds.
  */
-OCTREEBUILDER_API Partition computePartition(const OctantID& globalRoot, const std::vector<OctantID>& levelZeroLeafs, int numThreads);
+OCTREEBUILDER_API Partition computePartition(const OctantID& globalRoot, const std::vector<OctantID>& levelZeroLeafs, const int numThreads);
 
 /**
  * @brief creates all octants between start and end so that the level of each octant is maximal
@@ -107,5 +107,5 @@ OCTREEBUILDER_API std::vector<OctantID> completeSubtree(const OctantID& root, ui
  *
  * The final octree contains all level zero leafs the remaining space is covered with the minimum number of non-overlapping octants
  */
-OCTREEBUILDER_API LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vector<OctantID>& levelZeroLeafs, int numThreads,
-                                                      uint maxLevel = std::numeric_limits<uint>::max());
+OCTREEBUILDER_API LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vector<OctantID>& levelZeroLeafs, const int numThreads,
+                                                      const uint maxLevel = std::numeric_limits<uint>::max());

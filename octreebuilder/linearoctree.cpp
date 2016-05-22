@@ -27,6 +27,11 @@ LinearOctree::LinearOctree(const OctantID& root, const container_type& leafs) : 
     m_deepestLastDecendant = OctantID(getMaxXYZForOctreeDepth(root.level()) + root.coord(), 0);
 }
 
+LinearOctree::LinearOctree(const OctantID& root, const size_t& numLeafs) : m_root(root) {
+    m_deepestLastDecendant = OctantID(getMaxXYZForOctreeDepth(root.level()) + root.coord(), 0);
+    m_leafs.reserve(numLeafs);
+}
+
 const OctantID& LinearOctree::root() const {
     return m_root;
 }
@@ -44,7 +49,6 @@ void LinearOctree::insert(const OctantID& octant) {
         throw std::runtime_error("LinearOctree::insert: Invalid parameter octant out of bounds.");
     }
 
-    assert(std::find(m_leafs.begin(), m_leafs.end(), octant) == m_leafs.end());
     m_leafs.push_back(octant);
 }
 
@@ -65,7 +69,6 @@ std::vector<OctantID> LinearOctree::replaceWithChildren(const OctantID& octant) 
 }
 
 void LinearOctree::replaceWithSubtree(const OctantID& octant, const std::vector<OctantID>& subtree) {
-
     if (!insideTreeBounds(octant)) {
         throw std::runtime_error("LinearOctree::replaceWithSubtree: Invalid parameter octant out of bounds.");
     }
@@ -114,4 +117,8 @@ void LinearOctree::sortAndRemove() {
         m_toRemove.clear();
     }
     pss::parallel_stable_sort(m_leafs.begin(), m_leafs.end());
+}
+
+void LinearOctree::reserve(const size_t numLeafs) {
+    m_leafs.reserve(numLeafs);
 }

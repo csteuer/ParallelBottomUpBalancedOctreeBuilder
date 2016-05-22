@@ -11,7 +11,9 @@
 #include <algorithm>
 #include <assert.h>
 
+#include "perfcounter.h"
 #include "logging.h"
+#include <iomanip>
 
 ParallelOctreeBuilder::ParallelOctreeBuilder(const Vector3i& maxXYZ, size_t numLevelZeroLeafsHint, uint maxLevel) : OctreeBuilder(maxXYZ, maxLevel) {
     if (!fitsInMortonCode(maxXYZ)) {
@@ -19,27 +21,37 @@ ParallelOctreeBuilder::ParallelOctreeBuilder(const Vector3i& maxXYZ, size_t numL
     }
 
     m_levelZeroLeafsSet.reserve(numLevelZeroLeafsHint);
-    m_levelZeroLeafs.reserve(numLevelZeroLeafsHint);
 }
 
 morton_t ParallelOctreeBuilder::addLevelZeroLeaf(const Vector3i& c) {
-    OctantID leaf(c, 0);
-    auto insertPair = m_levelZeroLeafsSet.insert(leaf.mcode());
+    morton_t mortonCode = getMortonCodeForCoordinate(c);
 
-    if (insertPair.second) {
-        m_levelZeroLeafs.push_back(leaf);
-    }
+    m_levelZeroLeafsSet.insert(mortonCode);
 
-    return leaf.mcode();
+    return mortonCode;
 }
 
 std::unique_ptr<Octree> ParallelOctreeBuilder::finishBuilding() {
+    PerfCounter perfCounter;
+
     OctantID root(Vector3i(0), getOctreeDepthForBounding(m_maxXYZ));
 
-    pss::parallel_stable_sort(m_levelZeroLeafs.begin(), m_levelZeroLeafs.end());
+    perfCounter.start();
+    std::vector<OctantID> levelZeroLeafs;
+    levelZeroLeafs.reserve(m_levelZeroLeafsSet.size());
+    for (morton_t mcode : m_levelZeroLeafsSet) {
+        levelZeroLeafs.push_back(OctantID(mcode, 0));
+    }
+    LOG_PROF(std::left << std::setw(30) << "Create level zero leafs list: " << perfCounter);
 
-    LinearOctree balancedOctree = createBalancedOctreeParallel(root, m_levelZeroLeafs, omp_get_max_threads(), maxLevel());
+    perfCounter.start();
+    pss::parallel_stable_sort(levelZeroLeafs.begin(), levelZeroLeafs.end());
+    LOG_PROF(std::left << std::setw(30) << "Sort level zero leafs list: " << perfCounter);
 
-    std::unique_ptr<Octree> result(new OctreeImpl(balancedOctree));
+    perfCounter.start();
+    LinearOctree balancedOctree = createBalancedOctreeParallel(root, levelZeroLeafs, omp_get_max_threads(), maxLevel());
+    LOG_PROF(std::left << std::setw(30) << "Created octree: " << perfCounter);
+
+    std::unique_ptr<Octree> result(new OctreeImpl(std::move(balancedOctree)));
     return result;
 }

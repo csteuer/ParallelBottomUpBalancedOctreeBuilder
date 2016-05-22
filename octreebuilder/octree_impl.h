@@ -5,17 +5,16 @@
 #include "octreebuilder_api.h"
 #include "octree.h"
 #include "box.h"
+#include "linearoctree.h"
 
 #include <vector>
 #include <unordered_set>
-#include <unordered_map>
 
-class LinearOctree;
 
 class OCTREEBUILDER_API OctreeImpl : public Octree {
 public:
     OctreeImpl(std::vector<std::unordered_set<morton_t>> tree);
-    OctreeImpl(const LinearOctree& linearOctree);
+    OctreeImpl(LinearOctree&& linearOctree);
 
     virtual Vector3i getMaxXYZ() const override;
 
@@ -34,7 +33,6 @@ public:
 private:
     // morton codes grouped by level
     std::vector<std::unordered_set<morton_t>> m_tree;
-    // linear tree
-    std::vector<std::pair<morton_t, uint>> m_nodeList;
+    LinearOctree m_linearTree;
     Box m_bounding;
 };
