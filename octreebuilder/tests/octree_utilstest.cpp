@@ -357,7 +357,7 @@ TEST(OctreeUtilsTest, mergeUnbalancedCompleteTreeWithBalancedIncompleteTreeTest)
     LinearOctree completeUnbalancedTree(
         OctantID(0, 3), {OctantID(0, 1), OctantID(8, 1), OctantID(16, 1), OctantID(24, 1), OctantID(32, 1), OctantID(40, 1), OctantID(48, 1), OctantID(56, 0), OctantID(57, 0),
                          OctantID(58, 0), OctantID(59, 0), OctantID(60, 0), OctantID(61, 0), OctantID(62, 0), OctantID(63, 0), OctantID(64, 2),
-                         OctantID(128, 2), OctantID(192, 2), OctantID(192, 2), OctantID(256, 2), OctantID(320, 2), OctantID(384, 2), OctantID(448, 2)});
+                         OctantID(128, 2), OctantID(192, 2), OctantID(256, 2), OctantID(320, 2), OctantID(384, 2), OctantID(448, 2)});
 
     LinearOctree incompleteBalancedTree(OctantID(0, 3));
     for (morton_t mcode = 64; mcode < 512; mcode += 8) {

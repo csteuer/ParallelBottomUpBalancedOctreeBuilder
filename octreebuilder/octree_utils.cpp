@@ -438,24 +438,26 @@ static std::vector<OctantID> flattenPartitions(const std::vector<LinearOctree>& 
     return allLeafs;
 }
 
-static LinearOctree mergePartitionsAndBalancedBoundaryTree(const std::vector<OctantID>& flatUnbalancedTree, const LinearOctree& balancedBoundaryTree,
-                                                           const std::unordered_set<morton_t>& boundaryOctantsCodeSet) {
+static LinearOctree mergePartitionsAndBalancedBoundaryTree(const std::vector<OctantID>& flatUnbalancedTree, const LinearOctree& balancedBoundaryTree) {
     if (balancedBoundaryTree.leafs().empty()) {
         return LinearOctree(balancedBoundaryTree.root(), flatUnbalancedTree);
     }
 
-    const size_t numLeafsInMergedTree = flatUnbalancedTree.size() - boundaryOctantsCodeSet.size() + balancedBoundaryTree.leafs().size();
+    const size_t numLeafsInMergedTree = flatUnbalancedTree.size() + balancedBoundaryTree.leafs().size();
     LinearOctree mergedTree(balancedBoundaryTree.root(), numLeafsInMergedTree);
 
     auto balancingOctantsIterator = balancedBoundaryTree.leafs().begin();
 
-    for (size_t i = 0; i < flatUnbalancedTree.size() - 1; i++) {
-        const OctantID& current = flatUnbalancedTree.at(i);
+    auto unbalancedOctantsInsertRangeBegin = flatUnbalancedTree.begin();
+    auto unbalancedOctantsIterator = flatUnbalancedTree.begin();
 
-        if (boundaryOctantsCodeSet.count(current.mcode()) > 0) {
+    for (; unbalancedOctantsIterator != flatUnbalancedTree.end(); ++unbalancedOctantsIterator) {
+        const OctantID& current = *unbalancedOctantsIterator;
+
+        if (current.mcode() == balancingOctantsIterator->mcode()) {
             assert(*balancingOctantsIterator == current || balancingOctantsIterator->isDecendantOf(current));
 
-            const OctantID& next = flatUnbalancedTree.at(i + 1);
+            const OctantID& next = *(unbalancedOctantsIterator + 1);
 
             auto balancingOctantsRangeStart = balancingOctantsIterator;
 
@@ -463,37 +465,24 @@ static LinearOctree mergePartitionsAndBalancedBoundaryTree(const std::vector<Oct
                 ++balancingOctantsIterator;
             }
 
-            if (balancingOctantsRangeStart != balancingOctantsIterator) {
-                mergedTree.insert(balancingOctantsRangeStart, balancingOctantsIterator);
-            }
+            mergedTree.insert(unbalancedOctantsInsertRangeBegin, unbalancedOctantsIterator);
+            unbalancedOctantsInsertRangeBegin = unbalancedOctantsIterator + 1;
 
-        } else {
-            mergedTree.insert(current);
+            mergedTree.insert(balancingOctantsRangeStart, balancingOctantsIterator);
         }
     }
 
-    if (balancingOctantsIterator != balancedBoundaryTree.leafs().end()) {
-        assert(*balancingOctantsIterator == flatUnbalancedTree.back() || balancingOctantsIterator->isDecendantOf(flatUnbalancedTree.back()));
+    mergedTree.insert(unbalancedOctantsInsertRangeBegin, unbalancedOctantsIterator);
 
-        for (; balancingOctantsIterator != balancedBoundaryTree.leafs().end(); ++balancingOctantsIterator) {
-            mergedTree.insert(*balancingOctantsIterator);
-        }
-    } else {
-        mergedTree.insert(flatUnbalancedTree.back());
-    }
+    assert(balancingOctantsIterator == balancedBoundaryTree.leafs().end() || *balancingOctantsIterator == flatUnbalancedTree.back() ||
+           balancingOctantsIterator->isDecendantOf(flatUnbalancedTree.back()));
+    mergedTree.insert(balancingOctantsIterator, balancedBoundaryTree.leafs().end());
 
     return mergedTree;
 }
 
 LinearOctree mergeUnbalancedCompleteTreeWithBalancedIncompleteTree(const LinearOctree& unbalancedTree, const LinearOctree& balancedTree) {
-    std::unordered_set<morton_t> balancedLeafsSet;
-    balancedLeafsSet.reserve(balancedTree.leafs().size());
-
-    for (const OctantID& octant : balancedTree.leafs()) {
-        balancedLeafsSet.insert(octant.mcode());
-    }
-
-    return mergePartitionsAndBalancedBoundaryTree(unbalancedTree.leafs(), balancedTree, balancedLeafsSet);
+    return mergePartitionsAndBalancedBoundaryTree(unbalancedTree.leafs(), balancedTree);
 }
 
 static void parallelCreateBalancedSubtrees(std::vector<LinearOctree>& partitions, const uint maxLevel) {
@@ -503,11 +492,13 @@ static void parallelCreateBalancedSubtrees(std::vector<LinearOctree>& partitions
     }
 }
 
-static std::vector<std::vector<OctantID>> parallelCollectBoundaryLeafs(const std::vector<LinearOctree>& partitions, const LinearOctree& globalTree) {
-    std::vector<std::vector<OctantID>> boundaryOctantsPerPartition(partitions.size());
+static std::vector<std::vector<OctantID>> parallelCollectBoundaryLeafs(const Partition& partition) {
+    const LinearOctree globalTree(partition.root);
+
+    std::vector<std::vector<OctantID>> boundaryOctantsPerPartition(partition.partitions.size());
 #pragma omp parallel for schedule(dynamic, 1)
-    for (size_t i = 0; i < partitions.size(); i++) {
-        const LinearOctree& currentPartition = partitions.at(i);
+    for (size_t i = 0; i < partition.partitions.size(); i++) {
+        const LinearOctree& currentPartition = partition.partitions.at(i);
         std::vector<OctantID>& boundaryOctants = boundaryOctantsPerPartition.at(i);
 
         collectBoundaryLeafs(currentPartition, globalTree, boundaryOctants);
@@ -516,28 +507,20 @@ static std::vector<std::vector<OctantID>> parallelCollectBoundaryLeafs(const std
     return boundaryOctantsPerPartition;
 }
 
-static std::unordered_set<morton_t> createBoundaryOctantsTreeAndSet(const std::vector<std::vector<OctantID>>& boundaryOctantsPerPartition,
-                                                                    LinearOctree& boundaryOctantsTree) {
+static LinearOctree createBoundaryOctantsTree(const std::vector<std::vector<OctantID>>& boundaryOctantsPerPartition, const OctantID& globalTreeRoot) {
+
     size_t numBoundaryOctants = 0;
     for (const std::vector<OctantID>& boundaryOctants : boundaryOctantsPerPartition) {
         numBoundaryOctants += boundaryOctants.size();
     }
 
-    std::unordered_set<morton_t> boundaryOctantsCodeSet;
-
-    boundaryOctantsCodeSet.reserve(numBoundaryOctants);
-    boundaryOctantsTree.reserve(numBoundaryOctants);
+    LinearOctree boundaryOctantsTree(globalTreeRoot, numBoundaryOctants);
 
     for (const std::vector<OctantID>& boundaryOctants : boundaryOctantsPerPartition) {
         boundaryOctantsTree.insert(boundaryOctants.begin(), boundaryOctants.end());
-
-        for (const OctantID& octant : boundaryOctants) {
-            assert(boundaryOctantsCodeSet.count(octant.mcode()) == 0);
-            boundaryOctantsCodeSet.insert(octant.mcode());
-        }
     }
 
-    return boundaryOctantsCodeSet;
+    return boundaryOctantsTree;
 }
 
 LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vector<OctantID>& levelZeroLeafs, const int numThreads, const uint maxLevel) {
@@ -553,12 +536,11 @@ LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vecto
     LOG_PROF(std::left << std::setw(30) << "Created balanced subtrees: " << perfCounter);
 
     perfCounter.start();
-    LinearOctree boundaryOctantsTree(computedPartition.root);
-    std::vector<std::vector<OctantID>> boundaryOctantsPerPartition = parallelCollectBoundaryLeafs(computedPartition.partitions, boundaryOctantsTree);
+    std::vector<std::vector<OctantID>> boundaryOctantsPerPartition = parallelCollectBoundaryLeafs(computedPartition);
     LOG_PROF(std::left << std::setw(30) << "Collected boundary leafs: " << perfCounter);
 
     perfCounter.start();
-    std::unordered_set<morton_t> boundaryOctantsCodeSet = createBoundaryOctantsTreeAndSet(boundaryOctantsPerPartition, boundaryOctantsTree);
+    LinearOctree boundaryOctantsTree = createBoundaryOctantsTree(boundaryOctantsPerPartition, computedPartition.root);
     LOG_PROF(std::left << std::setw(30) << "Created boundary tree: " << perfCounter);
 
     perfCounter.start();
@@ -570,7 +552,7 @@ LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vecto
     LOG_PROF(std::left << std::setw(30) << "Flatten boundary tree: " << perfCounter);
 
     perfCounter.start();
-    LinearOctree result = mergePartitionsAndBalancedBoundaryTree(leafsOfAllPartitions, balancedBoundaryTree, boundaryOctantsCodeSet);
+    LinearOctree result = mergePartitionsAndBalancedBoundaryTree(leafsOfAllPartitions, balancedBoundaryTree);
     LOG_PROF(std::left << std::setw(30) << "Merged boundary tree: " << perfCounter);
 
     return result;
