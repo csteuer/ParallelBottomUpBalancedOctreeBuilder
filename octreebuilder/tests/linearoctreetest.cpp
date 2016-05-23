@@ -32,20 +32,15 @@ TEST(LinearOctreeTest, insertTest) {
                                                        OctantID(Vector3i(0), 0), OctantID(Vector3i(0, 0, 2), 0)));
 }
 
-TEST(LinearOctreeTest, insertOutOfBoundsTest) {
-    LinearOctree octree(OctantID(Vector3i(4, 4, 4), 2));
-
-    ASSERT_ANY_THROW(octree.insert(OctantID(Vector3i(0, 0, 0), 2)));
-    ASSERT_ANY_THROW(octree.insert(OctantID(Vector3i(2, 2, 2), 1)));
-    ASSERT_ANY_THROW(octree.insert(OctantID(Vector3i(3, 3, 3), 0)));
-    ASSERT_ANY_THROW(octree.insert(OctantID(Vector3i(7, 7, 3), 0)));
-
-    ASSERT_ANY_THROW(octree.insert(OctantID(Vector3i(8, 8, 8), 2)));
-    ASSERT_ANY_THROW(octree.insert(OctantID(Vector3i(8, 8, 8), 1)));
-    ASSERT_ANY_THROW(octree.insert(OctantID(Vector3i(8, 8, 8), 0)));
-    ASSERT_ANY_THROW(octree.insert(OctantID(Vector3i(8, 0, 0), 0)));
-
+TEST(LinearOctreeTest, insertRangeTest) {
+    LinearOctree octree(OctantID(Vector3i(0), 2));
     ASSERT_THAT(octree.leafs(), ::testing::IsEmpty());
+
+    LinearOctree::container_type input { OctantID(Vector3i(0), 0), OctantID(Vector3i(0), 1), OctantID(Vector3i(0, 0, 2), 0), OctantID(Vector3i(0), 2) };
+    octree.insert(input.begin(), input.end());
+    octree.sortAndRemove();
+    ASSERT_THAT(octree.leafs(), ::testing::ElementsAre(OctantID(Vector3i(0), 2), OctantID(Vector3i(0), 1),
+                                                       OctantID(Vector3i(0), 0), OctantID(Vector3i(0, 0, 2), 0)));
 }
 
 TEST(LinearOctreeTest, insideTreeBoundsTest) {

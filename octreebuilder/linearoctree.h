@@ -62,6 +62,7 @@ public:
      * Its not allowed to add duplicates (however its not checked in release mode).
      */
     void insert(const OctantID& octant);
+    void insert(container_type::const_iterator begin, container_type::const_iterator end);
 
     /**
      * @brief checks if the octant is stored in the linear tree.

@@ -66,6 +66,14 @@ struct Partition {
 OCTREEBUILDER_API Partition computePartition(const OctantID& globalRoot, const std::vector<OctantID>& levelZeroLeafs, const int numThreads);
 
 /**
+ * @brief merges the unbalanced complete tree with the balanced incomplete tree
+ * @param unbalancedTree a complete sorted unbalanced tree
+ * @param balancedTree a incomplete sorted balanced tree
+ * @return the merged tree. If balancedTree contains leafs for every unbalanced leaf in unbalancedTree the result is a balanced complete tree.
+ */
+OCTREEBUILDER_API LinearOctree mergeUnbalancedCompleteTreeWithBalancedIncompleteTree(const LinearOctree& unbalancedTree, const LinearOctree& balancedTree);
+
+/**
  * @brief creates all octants between start and end so that the level of each octant is maximal
  * @param start the start octant (start < end)
  * @param end the end octant

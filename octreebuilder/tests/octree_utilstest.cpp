@@ -6,7 +6,7 @@
 
 #include <vector_utils.h>
 
-TEST(SpaceFillingOctreeUtilsTest, getSearchKeysTest) {
+TEST(OctreeUtilsTest, getSearchKeysTest) {
     const LinearOctree octree(OctantID(0, 4));
 
     // All search keys of the lower left front node are outside of the domain
@@ -27,39 +27,32 @@ TEST(SpaceFillingOctreeUtilsTest, getSearchKeysTest) {
     ASSERT_THAT(searchKeys, ::testing::ElementsAre(OctantID(Vector3i(0, 0, 2), 0)));
 
     searchKeys = getSearchKeys(OctantID(Vector3i(1, 0, 1), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 0, 1), 0), OctantID(Vector3i(2, 0, 2), 0),
-                                                            OctantID(Vector3i(1, 0, 2), 0)));
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 0, 1), 0), OctantID(Vector3i(2, 0, 2), 0), OctantID(Vector3i(1, 0, 2), 0)));
 
     searchKeys = getSearchKeys(OctantID(Vector3i(1, 1, 0), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 1, 0), 0), OctantID(Vector3i(2, 2, 0), 0),
-                                                            OctantID(Vector3i(1, 2, 0), 0)));
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 1, 0), 0), OctantID(Vector3i(2, 2, 0), 0), OctantID(Vector3i(1, 2, 0), 0)));
 
     searchKeys = getSearchKeys(OctantID(Vector3i(0, 1, 1), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(0, 2, 1), 0), OctantID(Vector3i(0, 2, 2), 0),
-                                                            OctantID(Vector3i(0, 1, 2), 0)));
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(0, 2, 1), 0), OctantID(Vector3i(0, 2, 2), 0), OctantID(Vector3i(0, 1, 2), 0)));
 
     searchKeys = getSearchKeys(OctantID(Vector3i(1, 1, 1), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 1, 1), 0), OctantID(Vector3i(1, 2, 1), 0),
-                                                            OctantID(Vector3i(1, 1, 2), 0), OctantID(Vector3i(2, 2, 1), 0),
-                                                            OctantID(Vector3i(2, 1, 2), 0), OctantID(Vector3i(1, 2, 2), 0),
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 1, 1), 0), OctantID(Vector3i(1, 2, 1), 0), OctantID(Vector3i(1, 1, 2), 0),
+                                                            OctantID(Vector3i(2, 2, 1), 0), OctantID(Vector3i(2, 1, 2), 0), OctantID(Vector3i(1, 2, 2), 0),
                                                             OctantID(Vector3i(2, 2, 2), 0)));
 
     searchKeys = getSearchKeys(OctantID(Vector3i(4, 4, 2), 1), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 4, 4), 0), OctantID(Vector3i(4, 3, 4), 0),
-                                                            OctantID(Vector3i(4, 4, 4), 0), OctantID(Vector3i(3, 3, 4), 0),
-                                                            OctantID(Vector3i(3, 4, 3), 0), OctantID(Vector3i(4, 3, 3), 0),
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 4, 4), 0), OctantID(Vector3i(4, 3, 4), 0), OctantID(Vector3i(4, 4, 4), 0),
+                                                            OctantID(Vector3i(3, 3, 4), 0), OctantID(Vector3i(3, 4, 3), 0), OctantID(Vector3i(4, 3, 3), 0),
                                                             OctantID(Vector3i(3, 3, 3), 0)));
 
     searchKeys = getSearchKeys(OctantID(Vector3i(4, 4, 4), 1), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 4, 4), 0), OctantID(Vector3i(4, 3, 4), 0),
-                                                            OctantID(Vector3i(4, 4, 3), 0), OctantID(Vector3i(3, 3, 4), 0),
-                                                            OctantID(Vector3i(3, 4, 3), 0), OctantID(Vector3i(4, 3, 3), 0),
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 4, 4), 0), OctantID(Vector3i(4, 3, 4), 0), OctantID(Vector3i(4, 4, 3), 0),
+                                                            OctantID(Vector3i(3, 3, 4), 0), OctantID(Vector3i(3, 4, 3), 0), OctantID(Vector3i(4, 3, 3), 0),
                                                             OctantID(Vector3i(3, 3, 3), 0)));
 
     searchKeys = getSearchKeys(OctantID(Vector3i(4, 6, 4), 1), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 8, 4), 0), OctantID(Vector3i(4, 8, 4), 0),
-                                                            OctantID(Vector3i(4, 8, 3), 0), OctantID(Vector3i(3, 7, 4), 0),
-                                                            OctantID(Vector3i(3, 8, 3), 0), OctantID(Vector3i(4, 7, 3), 0),
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 8, 4), 0), OctantID(Vector3i(4, 8, 4), 0), OctantID(Vector3i(4, 8, 3), 0),
+                                                            OctantID(Vector3i(3, 7, 4), 0), OctantID(Vector3i(3, 8, 3), 0), OctantID(Vector3i(4, 7, 3), 0),
                                                             OctantID(Vector3i(3, 7, 3), 0)));
 
     // All search keys of the upper right back node are outside of the domain
@@ -76,9 +69,8 @@ TEST(SpaceFillingOctreeUtilsTest, getSearchKeysTest) {
     ASSERT_THAT(searchKeys, ::testing::IsEmpty());
 }
 
-TEST(SpaceFillingOctreeUtilsTest, propagateRippleInUnbalancedTreeTest) {
+TEST(OctreeUtilsTest, propagateRippleInUnbalancedTreeTest) {
     LinearOctree unbalancedOctree(OctantID(0, 4));
-
 
     /* Create unbalanced octree (thats not even four balanced)
      *  __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
@@ -134,9 +126,8 @@ TEST(SpaceFillingOctreeUtilsTest, propagateRippleInUnbalancedTreeTest) {
     }
 }
 
-TEST(SpaceFillingOctreeUtilsTest, propagateRippleInIncompleteUnbalancedTreeTest) {
+TEST(OctreeUtilsTest, propagateRippleInIncompleteUnbalancedTreeTest) {
     LinearOctree unbalancedOctree(OctantID(0, 4));
-
 
     /* Create unbalanced octree (thats not even four balanced)
      *  __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
@@ -183,13 +174,13 @@ TEST(SpaceFillingOctreeUtilsTest, propagateRippleInIncompleteUnbalancedTreeTest)
     }
 }
 
-TEST(SpaceFillingOctreeUtilsTest, completeAndBalanceSubtreeNoLeafsTest) {
+TEST(OctreeUtilsTest, completeAndBalanceSubtreeNoLeafsTest) {
     ASSERT_THAT(createBalancedSubtree(OctantID(Vector3i(0), 0), {}).leafs(), ::testing::ElementsAre(OctantID(Vector3i(0), 0)));
     ASSERT_THAT(createBalancedSubtree(OctantID(Vector3i(0), 4), {}).leafs(), ::testing::ElementsAre(OctantID(Vector3i(0), 4)));
     ASSERT_THAT(createBalancedSubtree(OctantID(Vector3i(2), 1), {}).leafs(), ::testing::ElementsAre(OctantID(Vector3i(2), 1)));
 }
 
-TEST(SpaceFillingOctreeUtilsTest, completeAndBalanceSubtreeAtOriginTest) {
+TEST(OctreeUtilsTest, completeAndBalanceSubtreeAtOriginTest) {
     LinearOctree octree = createBalancedSubtree(OctantID(Vector3i(0), 4), {OctantID(Vector3i(0), 0)});
 
     ASSERT_THAT(octree.leafs(), ::testing::SizeIs(29));
@@ -205,14 +196,13 @@ TEST(SpaceFillingOctreeUtilsTest, completeAndBalanceSubtreeAtOriginTest) {
     }
 }
 
-TEST(SpaceFillingOctreeUtilsTest, completeAndBalanceSubtreeNotAtOrigin) {
+TEST(OctreeUtilsTest, completeAndBalanceSubtreeNotAtOrigin) {
     LinearOctree octree = createBalancedSubtree(OctantID(Vector3i(16, 0, 0), 4), {OctantID(Vector3i(16, 0, 0), 0)});
 
     ASSERT_THAT(octree.leafs(), ::testing::SizeIs(29));
 
     for (Vector3i c : VectorSpace(Vector3i(2))) {
-        ASSERT_THAT(octree.leafs(),
-                    ::testing::Contains(::testing::Eq(OctantID(Vector3i(16, 0, 0) + c, 0))));
+        ASSERT_THAT(octree.leafs(), ::testing::Contains(::testing::Eq(OctantID(Vector3i(16, 0, 0) + c, 0))));
 
         if (c != Vector3i(0)) {
             ASSERT_THAT(octree.leafs(), ::testing::Contains(::testing::Eq(OctantID(Vector3i(16, 0, 0) + c * 2, 1))));
@@ -222,7 +212,7 @@ TEST(SpaceFillingOctreeUtilsTest, completeAndBalanceSubtreeNotAtOrigin) {
     }
 }
 
-TEST(SpaceFillingOctreeUtilsTest, nearestCommonAncestorTest) {
+TEST(OctreeUtilsTest, nearestCommonAncestorTest) {
     ASSERT_THAT(nearestCommonAncestor(OctantID(0, 0), OctantID(0, 0)), ::testing::Eq(OctantID(0, 0)));
     ASSERT_THAT(nearestCommonAncestor(OctantID(1, 0), OctantID(0, 0)), ::testing::Eq(OctantID(0, 1)));
 
@@ -239,11 +229,9 @@ TEST(SpaceFillingOctreeUtilsTest, nearestCommonAncestorTest) {
     ASSERT_THAT(nearestCommonAncestor(OctantID({7, 7, 7}, 0), OctantID({4, 4, 4}, 2)), ::testing::Eq(OctantID({4, 4, 4}, 2)));
 }
 
-MATCHER_P2(IsValidPartition, levelZeroLeafs, globalTree,
-           std::string(negation ? "isn't" : "is")
-           + " valid partition of tree with root " + ::testing::PrintToString(globalTree.root())
-           + ", and level zero leafs: " + ::testing::PrintToString(levelZeroLeafs)) {
-
+MATCHER_P2(IsValidPartition, levelZeroLeafs, globalTree, std::string(negation ? "isn't" : "is") + " valid partition of tree with root " +
+                                                             ::testing::PrintToString(globalTree.root()) + ", and level zero leafs: " +
+                                                             ::testing::PrintToString(levelZeroLeafs)) {
     // Just a functional test if all leafs are still presenent in the partition and
     // if the partition covers the whole tree
 
@@ -273,9 +261,8 @@ MATCHER_P2(IsValidPartition, levelZeroLeafs, globalTree,
 
     for (size_t i = 0; i < partition.partitions.size() - 1; i++) {
         if (partition.partitions.at(i).deepestLastDecendant().mcode() + 1 != partition.partitions.at(i + 1).deepestFirstDecendant().mcode()) {
-            *result_listener << "partition does not cover the whole tree. Partition #" << i
-                             << " deepest last decendant is " << partition.partitions.at(i).deepestLastDecendant().mcode()
-                             << " and partition #" << i + 1 << " deepest first descendant is "
+            *result_listener << "partition does not cover the whole tree. Partition #" << i << " deepest last decendant is "
+                             << partition.partitions.at(i).deepestLastDecendant().mcode() << " and partition #" << i + 1 << " deepest first descendant is "
                              << partition.partitions.at(i).deepestFirstDecendant().mcode();
             return false;
         }
@@ -297,8 +284,7 @@ MATCHER_P2(IsValidPartition, levelZeroLeafs, globalTree,
     return true;
 }
 
-TEST(SpaceFillingOctreeUtilsTest, computePartitionTest) {
-
+TEST(OctreeUtilsTest, computePartitionTest) {
     // Just a functional test if all leafs are still presenent in the partition and
     // if the partition covers the whole tree
 
@@ -319,15 +305,15 @@ TEST(SpaceFillingOctreeUtilsTest, computePartitionTest) {
     ASSERT_THAT(partition, IsValidPartition(levelZeroLeafs, globalTree));
 }
 
-TEST(SpaceFillingOctreeUtilsTest, computePartitionWithLessLeafsThenThreadsTest) {
+TEST(OctreeUtilsTest, computePartitionWithLessLeafsThenThreadsTest) {
     const LinearOctree globalTree(OctantID(0, 3));
-    const std::vector<OctantID> levelZeroLeafs { OctantID(0, 0), OctantID(511, 0) };
+    const std::vector<OctantID> levelZeroLeafs{OctantID(0, 0), OctantID(511, 0)};
 
     Partition partition = computePartition(globalTree.root(), levelZeroLeafs, 4);
     ASSERT_THAT(partition, IsValidPartition(levelZeroLeafs, globalTree));
 }
 
-TEST(SpaceFillingOctreeUtilsTest, completeRegionTest) {
+TEST(OctreeUtilsTest, completeRegionTest) {
     const auto result = completeRegion(OctantID(36, 0), OctantID(294, 0));
 
     ASSERT_THAT(result, ::testing::ElementsAreArray({OctantID(37, 0), OctantID(38, 0), OctantID(39, 0), OctantID(40, 1), OctantID(48, 1), OctantID(56, 1),
@@ -336,7 +322,7 @@ TEST(SpaceFillingOctreeUtilsTest, completeRegionTest) {
                                                      OctantID(293, 0)}));
 }
 
-TEST(SpaceFillingOctreeUtilsTest, computeBlocksFromRegionsTest) {
+TEST(OctreeUtilsTest, computeBlocksFromRegionsTest) {
     const std::vector<OctantID> region0 = {OctantID(37, 0),  OctantID(38, 0),  OctantID(39, 0),  OctantID(40, 1),  OctantID(48, 1),
                                            OctantID(56, 1),  OctantID(64, 2),  OctantID(128, 2), OctantID(192, 2), OctantID(256, 1),
                                            OctantID(264, 1), OctantID(272, 1), OctantID(280, 1), OctantID(288, 0), OctantID(289, 0),
@@ -351,7 +337,7 @@ TEST(SpaceFillingOctreeUtilsTest, computeBlocksFromRegionsTest) {
                                                        OctantID(384, 2), OctantID(448, 2)));
 }
 
-TEST(SpaceFillingOctreeUtilsTest, completeSubtreeTest) {
+TEST(OctreeUtilsTest, completeSubtreeTest) {
     auto result = completeSubtree(OctantID(0, 2), 0, {OctantID(2, 0), OctantID(3, 0)});
     ASSERT_THAT(result, ::testing::UnorderedElementsAreArray({OctantID(0, 0), OctantID(1, 0), OctantID(2, 0), OctantID(3, 0), OctantID(4, 0), OctantID(5, 0),
                                                               OctantID(6, 0), OctantID(7, 0), OctantID(8, 1), OctantID(16, 1), OctantID(24, 1), OctantID(32, 1),
@@ -365,4 +351,30 @@ TEST(SpaceFillingOctreeUtilsTest, completeSubtreeTest) {
     ASSERT_THAT(result, ::testing::UnorderedElementsAreArray({OctantID(0, 1), OctantID(8, 1), OctantID(16, 1), OctantID(24, 1), OctantID(32, 1),
                                                               OctantID(40, 1), OctantID(48, 1), OctantID(56, 1), OctantID(64, 2), OctantID(128, 2),
                                                               OctantID(192, 2), OctantID(256, 2), OctantID(320, 2), OctantID(384, 2), OctantID(448, 2)}));
+}
+
+TEST(OctreeUtilsTest, mergeUnbalancedCompleteTreeWithBalancedIncompleteTreeTest) {
+    LinearOctree completeUnbalancedTree(
+        OctantID(0, 3), {OctantID(0, 1), OctantID(8, 1), OctantID(16, 1), OctantID(24, 1), OctantID(32, 1), OctantID(40, 1), OctantID(48, 1), OctantID(56, 0), OctantID(57, 0),
+                         OctantID(58, 0), OctantID(59, 0), OctantID(60, 0), OctantID(61, 0), OctantID(62, 0), OctantID(63, 0), OctantID(64, 2),
+                         OctantID(128, 2), OctantID(192, 2), OctantID(192, 2), OctantID(256, 2), OctantID(320, 2), OctantID(384, 2), OctantID(448, 2)});
+
+    LinearOctree incompleteBalancedTree(OctantID(0, 3));
+    for (morton_t mcode = 64; mcode < 512; mcode += 8) {
+        incompleteBalancedTree.insert(OctantID(mcode, 1));
+    }
+
+    const auto result = mergeUnbalancedCompleteTreeWithBalancedIncompleteTree(completeUnbalancedTree, incompleteBalancedTree);
+
+    for (morton_t mcode = 0; mcode < 512; mcode += 8) {
+        if (mcode == 56) {
+            for (morton_t lzeroMcode = 56; lzeroMcode < 64; lzeroMcode++) {
+                ASSERT_THAT(result.leafs(), ::testing::Contains(OctantID(lzeroMcode, 0)));
+            }
+        } else {
+            ASSERT_THAT(result.leafs(), ::testing::Contains(OctantID(mcode, 1)));
+        }
+    }
+
+    ASSERT_THAT(result.leafs(), ::testing::SizeIs(71));
 }
