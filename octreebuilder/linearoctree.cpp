@@ -45,12 +45,12 @@ const LinearOctree::container_type& LinearOctree::leafs() const {
 }
 
 void LinearOctree::insert(const OctantID& octant) {
-    assert(octant < m_root || octant > m_deepestLastDecendant);
+    assert(octant >= m_root || octant <= m_deepestLastDecendant);
     m_leafs.push_back(octant);
 }
 
 void LinearOctree::insert(container_type::const_iterator begin, container_type::const_iterator end) {
-    assert(std::all_of(begin, end, [this](const OctantID& octant) { return octant < m_root || octant > m_deepestLastDecendant; }));
+    assert(std::all_of(begin, end, [this](const OctantID& octant) { return octant >= m_root || octant <= m_deepestLastDecendant; }));
     m_leafs.insert(m_leafs.end(), begin, end);
 }
 
