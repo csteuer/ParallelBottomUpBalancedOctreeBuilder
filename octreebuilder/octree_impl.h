@@ -14,6 +14,11 @@
 class OCTREEBUILDER_API OctreeImpl : public Octree {
 public:
     OctreeImpl(std::vector<std::unordered_set<morton_t>> tree);
+
+    /**
+     * @brief creates an octree from an linear octree
+     * @param linearOctree an ordered, complete, balanced linear octree
+     */
     OctreeImpl(LinearOctree&& linearOctree);
 
     virtual Vector3i getMaxXYZ() const override;
@@ -29,6 +34,8 @@ public:
     virtual OctreeNode tryGetNodeAt(const Vector3i& llf, uint level) const override;
 
     virtual std::vector<OctreeNode> getNeighbourNodes(const OctreeNode& n, OctreeNode::Face sharedFace) const override;
+
+    virtual OctreeState checkState() const override;
 
 private:
     // morton codes grouped by level

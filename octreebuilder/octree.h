@@ -64,6 +64,20 @@ public:
      */
     virtual std::vector<OctreeNode> getNeighbourNodes(const OctreeNode& n, OctreeNode::Face sharedFace) const = 0;
 
+    enum class OctreeState {
+        VALID,
+        INCOMPLETE,
+        OVERLAPPING,
+        UNSORTED,
+        UNBALANCED
+    };
+
+    /**
+     * @brief checks if the octree is 2:1 balanced, sorted and only contains non overlapping leaf nodes that cover the whole space of the tree (complete)
+     * @return true if the octree is valid, false otherwise
+     */
+    virtual OctreeState checkState() const = 0;
+
     virtual ~Octree();
 };
 

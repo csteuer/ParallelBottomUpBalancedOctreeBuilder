@@ -15,13 +15,15 @@
 #include "linearoctree.h"
 #include "octantid.h"
 
-OctreeImpl::OctreeImpl(std::vector<std::unordered_set<morton_t>> tree) : m_tree(std::move(tree)), m_bounding(Box(getMaxXYZForOctreeDepth(getDepth()))) {
+OctreeImpl::OctreeImpl(std::vector<std::unordered_set<morton_t>> tree) : m_tree(std::move(tree)) {
     size_t numLeafs = 0;
     for (const auto& leafSet : tree) {
         numLeafs += leafSet.size();
     }
 
-    m_linearTree = LinearOctree(OctantID(0, getDepth()), numLeafs);
+    const uint depth = static_cast<uint>(m_tree.size() - 1);
+    m_linearTree = LinearOctree(OctantID(0, depth), numLeafs);
+    m_bounding = Box(getMaxXYZForOctreeDepth(depth));
 
     for (uint l = 0; l < m_tree.size(); l++) {
         for (const morton_t& mcode : m_tree.at(l)) {
@@ -63,7 +65,7 @@ Vector3i OctreeImpl::getMaxXYZ() const {
 }
 
 uint OctreeImpl::getDepth() const {
-    return static_cast<uint>(m_tree.size() - 1);
+    return m_linearTree.depth();
 }
 
 uint OctreeImpl::getMaxLevel() const {
@@ -182,11 +184,58 @@ std::vector<OctreeNode> OctreeImpl::getNeighbourNodes(const OctreeNode& n, Octre
             // 4 neighbours at the child level
             LOG_ERROR("Node " << n << " of space filling octree " << *this << " has no neighbour at same or +1/-1 level for face " << sharedFace
                               << " but is not a boundary node for that face. Failed last possible test for neighbour of child level: " << childNode);
-            throw std::runtime_error("Invalid parameter 'n' or defect space filling octree.");
+            throw std::runtime_error("Invalid parameter 'n' or invalid octree.");
         }
 
         neighbourNodes.push_back(childNode);
     }
 
     return neighbourNodes;
+}
+
+Octree::OctreeState OctreeImpl::checkState() const {
+    if (getDepth() == 0) {
+        return Octree::OctreeState::VALID;
+    }
+
+    // Check sorted
+    if (!m_linearTree.leafs().empty()) {
+        for (size_t i = 0; i < m_linearTree.leafs().size() - 1; i++) {
+            if (m_linearTree.leafs().at(i) > m_linearTree.leafs().at(i + 1)) {
+                return Octree::OctreeState::UNSORTED;
+            }
+        }
+    }
+
+    // Check complete and not overlapping
+    if (m_linearTree.leafs().empty() || m_linearTree.leafs().front().mcode() != 0) {
+        return Octree::OctreeState::INCOMPLETE;
+    }
+
+    if (LinearOctree(m_linearTree.leafs().back()).deepestLastDecendant() != m_linearTree.deepestLastDecendant()) {
+        return Octree::OctreeState::INCOMPLETE;
+    }
+
+    for (size_t i = 0; i < m_linearTree.leafs().size() - 1; i++) {
+        morton_t nextExpectedMortonCode = LinearOctree(m_linearTree.leafs().at(i)).deepestLastDecendant().mcode() + 1;
+        morton_t nextMortonCode = m_linearTree.leafs().at(i + 1).mcode();
+
+        if (nextMortonCode > nextExpectedMortonCode) {
+            return Octree::OctreeState::INCOMPLETE;
+        } else if (nextMortonCode < nextExpectedMortonCode) {
+            return Octree::OctreeState::OVERLAPPING;
+        }
+    }
+
+    // Check balanced
+    /*
+    bool valid = false;
+    for (size_t i = 0; i < getNumNodes(); i++) {
+        for (OctreeNode::Face f : { OctreeNode::LEFT, OctreeNode::RIGHT, OctreeNode::FRONT, OctreeNode::BACK, OctreeNode::TOP, OctreeNode::BOTTOM }) {
+
+        }
+    }
+    */
+
+    return Octree::OctreeState::VALID;
 }

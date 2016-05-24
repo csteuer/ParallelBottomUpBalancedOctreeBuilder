@@ -257,3 +257,127 @@ TEST_F(OctreeTest, getNeighbourNodeOctree4x4x4InverseTest) {
     EXPECT_THAT(octree4x4x4_inverse->getNeighbourNodes(nodeAt_2_0_2, OctreeNode::Face::TOP), ::testing::IsEmpty());
     EXPECT_THAT(octree4x4x4_inverse->getNeighbourNodes(nodeAt_2_0_2, OctreeNode::Face::BOTTOM), ::testing::ElementsAre(nodeAt_2_0_0));
 }
+
+TEST_F(OctreeTest, checkStateOfValidTreeTest) {
+    EXPECT_EQ(octree4x4x4->checkState(), Octree::OctreeState::VALID);
+    EXPECT_EQ(octree4x4x4_inverse->checkState(), Octree::OctreeState::VALID);
+}
+
+TEST_F(OctreeTest, checkStateOfUnsortedTreeTest) {
+    // last elememt missing
+    EXPECT_THAT(OctreeImpl(LinearOctree(OctantID(0, 2), { OctantID(54, 1), OctantID(48, 1), OctantID(40, 1),
+                                                          OctantID(32, 1), OctantID(24, 1), OctantID(16, 1),
+                                                          OctantID(8, 1), OctantID(0, 1) })),
+                ::testing::Property(&Octree::checkState, Octree::OctreeState::UNSORTED));
+}
+
+TEST_F(OctreeTest, checkStateOfIncompleteTreeTest) {
+    EXPECT_THAT(OctreeImpl(LinearOctree(OctantID(0, 2), {})), ::testing::Property(&Octree::checkState, Octree::OctreeState::INCOMPLETE));
+    EXPECT_THAT(OctreeImpl(LinearOctree(OctantID(0, 2), { OctantID(0, 1) })), ::testing::Property(&Octree::checkState, Octree::OctreeState::INCOMPLETE));
+
+    // last elememt missing
+    EXPECT_THAT(OctreeImpl(LinearOctree(OctantID(0, 2), { OctantID(0, 1), OctantID(8, 1), OctantID(16, 1),
+                                                          OctantID(24, 1), OctantID(32, 1), OctantID(40, 1),
+                                                          OctantID(48, 1) })),
+                ::testing::Property(&Octree::checkState, Octree::OctreeState::INCOMPLETE));
+
+    // first element missing
+    EXPECT_THAT(OctreeImpl(LinearOctree(OctantID(0, 2), { OctantID(8, 1), OctantID(16, 1),
+                                                          OctantID(24, 1), OctantID(32, 1), OctantID(40, 1),
+                                                          OctantID(48, 1), OctantID(54, 1) })),
+                ::testing::Property(&Octree::checkState, Octree::OctreeState::INCOMPLETE));
+
+    // missing element inbetween: OctantID(24, 0)
+    EXPECT_THAT(OctreeImpl(LinearOctree(OctantID(0, 2), { OctantID(0, 1), OctantID(8, 1), OctantID(16, 1),
+                                                          OctantID(32, 1), OctantID(40, 1),
+                                                          OctantID(48, 1), OctantID(54, 1) })),
+                ::testing::Property(&Octree::checkState, Octree::OctreeState::INCOMPLETE));
+
+    // elements of different level, missing: OctantID(42, 0)
+    EXPECT_THAT(OctreeImpl(LinearOctree(OctantID(0, 2), { OctantID(0, 0), OctantID(1, 0), OctantID(2, 0), OctantID(3, 0),
+                                                          OctantID(4, 0), OctantID(5, 0), OctantID(6, 0), OctantID(7, 0),
+                                                          OctantID(8, 1), OctantID(16, 1), OctantID(32, 1),
+                                                          OctantID(40, 0), OctantID(41, 0), OctantID(43, 0),
+                                                          OctantID(44, 0), OctantID(45, 0), OctantID(46, 0), OctantID(47, 0),
+                                                          OctantID(48, 1), OctantID(54, 1) })),
+                ::testing::Property(&Octree::checkState, Octree::OctreeState::INCOMPLETE));
+}
+
+TEST_F(OctreeTest, isValidWithOverlappingNodesTest) {
+
+    // overlapping OctantID(8, 1) with OctantID(8, 0) ... OctantID(15, 0)
+    EXPECT_THAT(OctreeImpl(LinearOctree(OctantID(0, 2), { OctantID(0, 1), OctantID(8, 1),
+                                                          OctantID(8, 0), OctantID(9, 0), OctantID(10, 0), OctantID(11, 0),
+                                                          OctantID(12, 0), OctantID(13, 0), OctantID(14, 0), OctantID(15, 0),
+                                                          OctantID(16, 1), OctantID(24, 1), OctantID(32, 1), OctantID(40, 1),
+                                                          OctantID(48, 1), OctantID(54, 1) })),
+                ::testing::Property(&Octree::checkState, Octree::OctreeState::INCOMPLETE));
+}
+
+TEST_F(OctreeTest, checkStateOfUnbalancedTreeTest) {
+
+    LinearOctree linearTree(OctantID(0, 3));
+
+    /* Create unbalanced octree
+     *  __ __ __ __ __ __ __ __
+     * |           |           |
+     * |           |           |
+     * |           |           |
+     * |__ __ __ __|__ __ __ __|
+     * |     |__|__|           |
+     * |__ __|__|__|           |
+     * |     |     |           |
+     * |__ __|__ __|__ __ __ __|
+     *
+     */
+
+    for (Vector3i c : VectorSpace(Vector3i(2))) {
+        linearTree.insert(OctantID(c + Vector3i(2), 0));
+
+        if (c != Vector3i(1)) {
+            linearTree.insert(OctantID(c * 2, 1));
+        }
+
+        if (c != Vector3i(0)) {
+            linearTree.insert(OctantID(c * 4, 2));
+        }
+    }
+
+    linearTree.sortAndRemove();
+
+    EXPECT_THAT(OctreeImpl(std::move(linearTree)),::testing::Property(&Octree::checkState, Octree::OctreeState::UNBALANCED));
+}
+
+TEST_F(OctreeTest, checkStateOfUnbalancedAtDiagonalOnlyTreeTest) {
+
+    LinearOctree linearTree(OctantID(0, 3));
+
+    /* Create unbalanced octree
+     *  __ __ __ __ __ __ __ __
+     * |     |     |           |
+     * |__ __|__ __|           |
+     * |     |     |           |
+     * |__ __|__ __|__ __ __ __|
+     * |     |__|__|     |     |
+     * |__ __|__|__|__ __|__ __|
+     * |     |     |     |     |
+     * |__ __|__ __|__ __|__ __|
+     *
+     */
+
+    for (Vector3i c : VectorSpace(Vector3i(4))) {
+        if (c != Vector3i(1) && (c.x() < 2 || c.y() < 2 || c.z() < 2)) {
+            linearTree.insert(OctantID(c * 2, 1));
+        }
+    }
+
+    for (Vector3i c : VectorSpace(Vector3i(2))) {
+        linearTree.insert(OctantID(c + Vector3i(2), 0));
+    }
+
+    linearTree.insert(OctantID(Vector3i(4, 4, 4), 2));
+
+    linearTree.sortAndRemove();
+
+    EXPECT_THAT(OctreeImpl(std::move(linearTree)),::testing::Property(&Octree::checkState, Octree::OctreeState::UNBALANCED));
+}

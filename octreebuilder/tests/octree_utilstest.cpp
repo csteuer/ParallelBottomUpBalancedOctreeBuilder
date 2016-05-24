@@ -93,14 +93,14 @@ TEST(OctreeUtilsTest, propagateRippleInUnbalancedTreeTest) {
      */
 
     for (Vector3i c : VectorSpace(Vector3i(2))) {
-        unbalancedOctree.insert(OctantID(c + Vector3i(6, 6, 6), 0));
+        unbalancedOctree.insert(OctantID(c + Vector3i(6), 0));
 
-        if (c != Vector3i(1, 1, 1)) {
-            unbalancedOctree.insert(OctantID(c * 2 + Vector3i(4, 4, 4), 1));
+        if (c != Vector3i(1)) {
+            unbalancedOctree.insert(OctantID(c * 2 + Vector3i(4), 1));
             unbalancedOctree.insert(OctantID(c * 4, 2));
         }
 
-        if (c != Vector3i(0, 0, 0)) {
+        if (c != Vector3i(0)) {
             unbalancedOctree.insert(OctantID(c * 8, 3));
         }
     }
@@ -112,12 +112,12 @@ TEST(OctreeUtilsTest, propagateRippleInUnbalancedTreeTest) {
     ASSERT_EQ(127, balancedTree.leafs().size());
 
     for (Vector3i c : VectorSpace(Vector3i(2))) {
-        ASSERT_THAT(balancedTree.leafs(), ::testing::Contains(OctantID(c + Vector3i(6, 6, 6), 0)));
+        ASSERT_THAT(balancedTree.leafs(), ::testing::Contains(OctantID(c + Vector3i(6), 0)));
     }
 
     for (Vector3i c : VectorSpace(Vector3i(4))) {
         if (c != Vector3i(1, 1, 1)) {
-            ASSERT_THAT(balancedTree.leafs(), ::testing::Contains(OctantID(c * 2 + Vector3i(4, 4, 4), 1)));
+            ASSERT_THAT(balancedTree.leafs(), ::testing::Contains(OctantID(c * 2 + Vector3i(4), 1)));
         }
 
         if (c.x() < 1 || c.x() > 2 || c.y() < 1 || c.y() > 2 || c.z() < 1 || c.z() > 2) {
@@ -150,9 +150,9 @@ TEST(OctreeUtilsTest, propagateRippleInIncompleteUnbalancedTreeTest) {
      */
 
     for (Vector3i c : VectorSpace(Vector3i(2))) {
-        unbalancedOctree.insert(OctantID(c + Vector3i(6, 6, 6), 0));
+        unbalancedOctree.insert(OctantID(c + Vector3i(6), 0));
 
-        if (c != Vector3i(0, 0, 0)) {
+        if (c != Vector3i(0)) {
             unbalancedOctree.insert(OctantID(c * 8, 3));
         }
     }
