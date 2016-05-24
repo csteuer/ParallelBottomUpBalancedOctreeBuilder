@@ -121,25 +121,30 @@ std::vector<OctantID> OctantID::potentialNeighboursWithoutSiblings(const LinearO
     return result;
 }
 
+static bool componentwiseAEqBAndNotEqC(const Vector3i& a, const Vector3i& b, const Vector3i& c) {
+    return (a.x() == b.x() && a.x() != c.x()) || (a.y() == b.y() && a.y() != c.y()) || (a.z() == b.z() && a.z() != c.z());
+}
+
 bool OctantID::isBoundaryOctant(const LinearOctree& block, const LinearOctree& globalTree) const {
     assert(globalTree.insideTreeBounds(block.root()) && block.insideTreeBounds(*this));
 
+    const coord_t treeSize = getOctantSizeForLevel(globalTree.depth());
+    const Vector3i treeLLF = globalTree.root().coord();
+    const Vector3i treeURB = treeLLF + Vector3i(treeSize);
+
+    const coord_t blockSize = getOctantSizeForLevel(block.depth());
+    const Vector3i blockLLF = block.root().coord();
+    const Vector3i blockURB = blockLLF + Vector3i(blockSize);
+
+    return isBoundaryOctant(blockLLF, blockURB, treeLLF, treeURB);
+}
+
+bool OctantID::isBoundaryOctant(const Vector3i& blockLLF, const Vector3i& blockURB, const Vector3i& treeLLF, const Vector3i& treeURB) const {
     const coord_t octantSize = getOctantSizeForLevel(m_level);
+    const Vector3i octantLLF = this->coord();
+    const Vector3i octantURB = octantLLF + Vector3i(octantSize);
 
-    Vector3i thisOctantLLF = this->coord();
-
-    // Iterate over insulation layer leafs: possile neighbours of the leaf (same level)
-    for (const Vector3i& offset : neighbour_offsets) {
-        Vector3i neighbourLLF = thisOctantLLF + offset * octantSize;
-        OctantID neighbour(neighbourLLF, m_level);
-
-        if (!block.insideTreeBounds(neighbour) && globalTree.insideTreeBounds(neighbour)) {
-            // neighbour is inside the global tree but not inside this block -> leaf is at the boundary of this block
-            return true;
-        }
-    }
-
-    return false;
+    return componentwiseAEqBAndNotEqC(octantLLF, blockLLF, treeLLF) || componentwiseAEqBAndNotEqC(octantURB, blockURB, treeURB);
 }
 
 bool operator<(const OctantID& left, const OctantID& right) {

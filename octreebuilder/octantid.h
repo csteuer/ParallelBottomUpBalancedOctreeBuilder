@@ -81,9 +81,21 @@ public:
      * @param block a subtree that contains this octant inside its bounds
      * @param globalTree a octree that contains this octant inside its bounds
      * @return true if this octant is at the boundary of block but not at the boundary of the global octree
-     * @note If block is not inside the bounds of globalTree or this octant is not inside the bounds of block the result is undefined
+     * @note if block is not inside the bounds of globalTree or this octant is not inside the bounds of block the result is undefined
      */
     bool isBoundaryOctant(const LinearOctree& block, const LinearOctree& globalTree) const;
+
+    /**
+     * @brief tests whether this octant is at the boundary of a subtree (block) but not at the boundary of the global octree
+     * @param blockLLF the llf of the block
+     * @param blockURB the urb of the block
+     * @param treeLLF the llf of the global tree
+     * @param treeURB the urb of the global tree
+     * @return true if this octant is at the boundary of block but not at the boundary of the global octree
+     * @note if block is not inside the bounds of the global tree or this octant is not inside the bounds of block the result is undefined
+     * @remark this overload of isBoundaryOctant has better performance. If the same block and global tree is used for multiple octants use this method.
+     */
+    bool isBoundaryOctant(const Vector3i& blockLLF, const Vector3i& blockURB, const Vector3i& treeLLF, const Vector3i& treeURB) const;
 
 private:
     morton_t m_mcode;

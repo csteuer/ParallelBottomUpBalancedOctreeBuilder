@@ -8,8 +8,7 @@
 TEST(OctantIDTest, coordinateConstructorTest) {
     EXPECT_THAT(OctantID(Vector3i(0), 0), ::testing::Property(&OctantID::mcode, ::testing::Eq(getMortonCodeForCoordinate(Vector3i(0)))));
     EXPECT_THAT(OctantID(Vector3i(0), 1), ::testing::Property(&OctantID::mcode, ::testing::Eq(getMortonCodeForCoordinate(Vector3i(0)))));
-    EXPECT_THAT(OctantID(Vector3i(1, 2, 3), 0),
-                ::testing::Property(&OctantID::mcode, ::testing::Eq(getMortonCodeForCoordinate(Vector3i(1, 2, 3)))));
+    EXPECT_THAT(OctantID(Vector3i(1, 2, 3), 0), ::testing::Property(&OctantID::mcode, ::testing::Eq(getMortonCodeForCoordinate(Vector3i(1, 2, 3)))));
 }
 
 TEST(OctantIDTest, equalityTest) {
@@ -97,15 +96,14 @@ TEST(OctantIDTest, ancestorAtLevelTest) {
 }
 
 TEST(OctantIDTest, childrenTest) {
-    EXPECT_THAT(OctantID(Vector3i(0), 1).children(),
-                ::testing::ElementsAre(OctantID(0, 0), OctantID(1, 0), OctantID(2, 0), OctantID(3, 0),
-                                       OctantID(4, 0), OctantID(5, 0), OctantID(6, 0), OctantID(7, 0)));
+    EXPECT_THAT(OctantID(Vector3i(0), 1).children(), ::testing::ElementsAre(OctantID(0, 0), OctantID(1, 0), OctantID(2, 0), OctantID(3, 0), OctantID(4, 0),
+                                                                            OctantID(5, 0), OctantID(6, 0), OctantID(7, 0)));
 
     OctantID parent(Vector3i(8, 8, 8), 3);
-    EXPECT_THAT(parent.children(), ::testing::ElementsAre(OctantID(parent.mcode(), 2), OctantID(parent.mcode() + 64, 2),
-                                                          OctantID(parent.mcode() + 128, 2), OctantID(parent.mcode() + 192, 2),
-                                                          OctantID(parent.mcode() + 256, 2), OctantID(parent.mcode() + 320, 2),
-                                                          OctantID(parent.mcode() + 384, 2), OctantID(parent.mcode() + 448, 2)));
+    EXPECT_THAT(parent.children(),
+                ::testing::ElementsAre(OctantID(parent.mcode(), 2), OctantID(parent.mcode() + 64, 2), OctantID(parent.mcode() + 128, 2),
+                                       OctantID(parent.mcode() + 192, 2), OctantID(parent.mcode() + 256, 2), OctantID(parent.mcode() + 320, 2),
+                                       OctantID(parent.mcode() + 384, 2), OctantID(parent.mcode() + 448, 2)));
 
     EXPECT_ANY_THROW(OctantID(0, 0).children());
 }
@@ -194,14 +192,59 @@ TEST(OctantIDTest, potentialNeighboursWithoutSiblingsTest) {
         }
     }
 
-    ASSERT_THAT(OctantID(Vector3i(12, 12, 12), 2).potentialNeighboursWithoutSiblings(LinearOctree(OctantID(Vector3i(8, 8, 8), 3))),
-                ::testing::IsEmpty());
+    ASSERT_THAT(OctantID(Vector3i(12, 12, 12), 2).potentialNeighboursWithoutSiblings(LinearOctree(OctantID(Vector3i(8, 8, 8), 3))), ::testing::IsEmpty());
 }
 
-TEST(OctantIDTest, isBoundaryOctantTest) {
+TEST(OctantIDTest, isBoundaryOctantAtOriginTest) {
     EXPECT_TRUE(OctantID(Vector3i(1, 0, 0), 0).isBoundaryOctant(LinearOctree(OctantID(0, 1)), LinearOctree(OctantID(0, 2))));
     EXPECT_TRUE(OctantID(Vector3i(2, 0, 0), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(2, 0, 0), 1)), LinearOctree(OctantID(0, 2))));
 
     EXPECT_FALSE(OctantID(Vector3i(0, 0, 0), 0).isBoundaryOctant(LinearOctree(OctantID(0, 1)), LinearOctree(OctantID(0, 2))));
     EXPECT_FALSE(OctantID(Vector3i(3, 0, 0), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(2, 0, 0), 1)), LinearOctree(OctantID(0, 2))));
+}
+
+TEST(OctantIDTest, isBoundaryOctantNotAtOriginLevelZeroTest) {
+    EXPECT_TRUE(OctantID(Vector3i(6, 6, 4), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_TRUE(OctantID(Vector3i(6, 4, 6), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_TRUE(OctantID(Vector3i(4, 6, 6), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_TRUE(OctantID(Vector3i(4, 4, 6), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_TRUE(OctantID(Vector3i(4, 6, 4), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_TRUE(OctantID(Vector3i(6, 4, 4), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_TRUE(OctantID(Vector3i(4, 4, 4), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+
+    EXPECT_FALSE(OctantID(Vector3i(6, 6, 6), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_FALSE(OctantID(Vector3i(6, 6, 5), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_FALSE(OctantID(Vector3i(6, 5, 6), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_FALSE(OctantID(Vector3i(5, 6, 6), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_FALSE(OctantID(Vector3i(6, 5, 5), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_FALSE(OctantID(Vector3i(5, 5, 6), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_FALSE(OctantID(Vector3i(5, 6, 5), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+    EXPECT_FALSE(OctantID(Vector3i(5, 5, 5), 0).isBoundaryOctant(LinearOctree(OctantID(Vector3i(4, 4, 4), 2)), LinearOctree(OctantID(0, 3))));
+}
+
+TEST(OctantIDTest, isBoundaryOctantNotAtOriginLevelTwoTest) {
+    EXPECT_TRUE(OctantID(Vector3i(12, 12, 8), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_TRUE(OctantID(Vector3i(12, 8, 12), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_TRUE(OctantID(Vector3i(8, 12, 12), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_TRUE(OctantID(Vector3i(8, 8, 12), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_TRUE(OctantID(Vector3i(8, 12, 8), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_TRUE(OctantID(Vector3i(12, 8, 8), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_TRUE(OctantID(Vector3i(8, 8, 8), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+
+    EXPECT_FALSE(OctantID(Vector3i(12, 12, 12), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_FALSE(OctantID(Vector3i(12, 12, 14), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_FALSE(OctantID(Vector3i(12, 14, 12), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_FALSE(OctantID(Vector3i(14, 12, 12), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_FALSE(OctantID(Vector3i(12, 14, 14), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_FALSE(OctantID(Vector3i(14, 14, 12), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_FALSE(OctantID(Vector3i(14, 12, 14), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+    EXPECT_FALSE(OctantID(Vector3i(14, 14, 14), 1).isBoundaryOctant(LinearOctree(OctantID(Vector3i(8, 8, 8), 3)), LinearOctree(OctantID(0, 4))));
+}
+
+TEST(OctantIDTest, isBoundaryOctantVectorParameters) {
+    EXPECT_TRUE(OctantID(Vector3i(2, 2, 2), 0).isBoundaryOctant(Vector3i(2, 2, 2), Vector3i(3, 3, 3), Vector3i(0, 0, 0), Vector3i(3, 3, 3)));
+    EXPECT_FALSE(OctantID(Vector3i(3, 3, 3), 0).isBoundaryOctant(Vector3i(2, 2, 2), Vector3i(3, 3, 3), Vector3i(0, 0, 0), Vector3i(3, 3, 3)));
+
+    EXPECT_TRUE(OctantID(Vector3i(6, 6, 4), 1).isBoundaryOctant(Vector3i(4, 4, 4), Vector3i(7, 7, 7), Vector3i(0, 0, 0), Vector3i(7, 7, 7)));
+    EXPECT_FALSE(OctantID(Vector3i(6, 6, 6), 1).isBoundaryOctant(Vector3i(4, 4, 4), Vector3i(7, 7, 7), Vector3i(0, 0, 0), Vector3i(7, 7, 7)));
 }

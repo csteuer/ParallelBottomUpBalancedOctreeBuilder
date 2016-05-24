@@ -416,9 +416,14 @@ std::vector<OctantID> completeSubtree(const OctantID& root, uint lowestLevel, co
     return result;
 }
 
-static void collectBoundaryLeafs(const LinearOctree& partition, const LinearOctree& globalTree, std::vector<OctantID>& outBoundaryOctants) {
+static void collectBoundaryLeafs(const LinearOctree& partition, const Vector3i& globalTreeLLF, const Vector3i& globalTreeURB, std::vector<OctantID>& outBoundaryOctants) {
+
+    const coord_t partitionSize = getOctantSizeForLevel(partition.depth());
+    const Vector3i partitionLLF = partition.root().coord();
+    const Vector3i partitionURB = partitionLLF + Vector3i(partitionSize);
+
     for (const OctantID& leaf : partition.leafs()) {
-        if (leaf.isBoundaryOctant(partition, globalTree)) {
+        if (leaf.isBoundaryOctant(partitionLLF, partitionURB, globalTreeLLF, globalTreeURB)) {
             outBoundaryOctants.push_back(leaf);
         }
     }
@@ -493,7 +498,10 @@ static void parallelCreateBalancedSubtrees(std::vector<LinearOctree>& partitions
 }
 
 static std::vector<std::vector<OctantID>> parallelCollectBoundaryLeafs(const Partition& partition) {
-    const LinearOctree globalTree(partition.root);
+
+    const coord_t globalTreeSize = getOctantSizeForLevel(partition.root.level());
+    const Vector3i globalTreeLLF = partition.root.coord();
+    const Vector3i globalTreeURB = globalTreeLLF + Vector3i(globalTreeSize);
 
     std::vector<std::vector<OctantID>> boundaryOctantsPerPartition(partition.partitions.size());
 #pragma omp parallel for schedule(dynamic, 1)
@@ -501,7 +509,7 @@ static std::vector<std::vector<OctantID>> parallelCollectBoundaryLeafs(const Par
         const LinearOctree& currentPartition = partition.partitions.at(i);
         std::vector<OctantID>& boundaryOctants = boundaryOctantsPerPartition.at(i);
 
-        collectBoundaryLeafs(currentPartition, globalTree, boundaryOctants);
+        collectBoundaryLeafs(currentPartition, globalTreeLLF, globalTreeURB, boundaryOctants);
     }
 
     return boundaryOctantsPerPartition;
