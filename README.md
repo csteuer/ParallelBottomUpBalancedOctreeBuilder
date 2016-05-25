@@ -11,7 +11,7 @@ OpenMP and Arch D. Robisons [parallel stable sort algorithm for OpenMP](https://
 ## Dependencies
 
 Requires:
- * [gcc](https://gcc.gnu.org/) 4.7+ or [clang](http://clang.llvm.org/) 3.6+
+ * [gcc](https://gcc.gnu.org/) 5.0+ or [clang](http://clang.llvm.org/) 3.7+
  * [cmake](https://cmake.org/) 2.8.12+
 
 Optional:

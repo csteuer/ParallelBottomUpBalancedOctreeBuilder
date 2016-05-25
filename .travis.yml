@@ -18,11 +18,12 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-3.6
+            - llvm-toolchain-trusty-3.7
           packages:
-            - clang-3.6
+            - clang-3.7
+            - libiomp-dev
       env: 
-        - COMPILER=clang++-3.6
+        - COMPILER=clang++-3.7
         - OMP_NUM_THREADS=4
 script:
   - git clone https://github.com/nickbruun/hayai.git
@@ -37,5 +38,5 @@ script:
   - cd build
   - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON -Dhayai_DIR=../../hayai/build ..
   - make
-  - octreebuilder/tests/octreebuilder-unittests
-  - octreebuilder/tests/octreebuilder-integrationtests  
+  - octreebuilder/unittests/octreebuilder-unittests
+  - octreebuilder/integrationtests/octreebuilder-integrationtests  
