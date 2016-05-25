@@ -23,7 +23,7 @@ matrix:
         - COMPILER=clang++-3.6
         - OMP_NUM_THREADS=4
 script:
-  - git clone git@github.com:nickbruun/hayai.git
+  - git clone https://github.com/nickbruun/hayai.git
   - cd hayai
   - mkdir build
   - cd build
