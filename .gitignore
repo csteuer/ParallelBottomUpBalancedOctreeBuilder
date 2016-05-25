@@ -6,3 +6,5 @@ googletest/
 cppcheck_report/
 cppcheck_result.xml
 buildProfiling/
+doc/
+buildGCC/

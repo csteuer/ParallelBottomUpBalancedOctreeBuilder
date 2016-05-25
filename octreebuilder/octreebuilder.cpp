@@ -1,7 +1,8 @@
 #include "octreebuilder.h"
 
-OctreeBuilder::OctreeBuilder(const Vector3i& maxXYZ, uint maxLevel)
-    : m_maxXYZ(maxXYZ), m_maxLevel(maxLevel) {
+namespace octreebuilder {
+
+OctreeBuilder::OctreeBuilder(const Vector3i& maxXYZ, uint maxLevel) : m_maxXYZ(maxXYZ), m_maxLevel(maxLevel) {
 }
 
 uint OctreeBuilder::maxLevel() {
@@ -9,4 +10,5 @@ uint OctreeBuilder::maxLevel() {
 }
 
 OctreeBuilder::~OctreeBuilder() {
+}
 }

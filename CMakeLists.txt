@@ -89,6 +89,14 @@ option(BUILD_BENCHMARKS "Builds the benchmark tests" OFF)
 
 IF(BUILD_BENCHMARKS)
     find_package(hayai REQUIRED)
+
+    if(${UNIX})
+        foreach(path ${HAYAI_INCLUDE_DIRS})
+          set(DEFAULT_COMPILE_FLAGS  -isystem${path} ${DEFAULT_COMPILE_FLAGS})
+          set(LINUX_TEST_COMPILE_FLAGS  -isystem${path} ${LINUX_TEST_COMPILE_FLAGS})
+        endforeach()
+    endif()
+
     add_subdirectory(benchmarks)
 ENDIF()
 

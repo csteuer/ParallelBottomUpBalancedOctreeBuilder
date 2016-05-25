@@ -1,5 +1,6 @@
 #include "linearoctree.h"
 
+#include "mortoncode_utils.h"
 #include "octantid.h"
 #include "parallel_stable_sort.h"
 
@@ -7,13 +8,15 @@
 #include <ostream>
 #include <assert.h>
 
-std::ostream& operator<<(std::ostream& s, const LinearOctree& octree) {
-    s << "Octree with layers. Size: " << octree.leafs().size() << std::endl;
+namespace octreebuilder {
+
+::std::ostream& operator<<(::std::ostream& s, const LinearOctree& octree) {
+    s << "Octree with layers. Size: " << octree.leafs().size() << ::std::endl;
     for (uint l = 0; l < octree.depth(); l++) {
-        s << "Level " << l << " leafs: " << std::endl;
+        s << "Level " << l << " leafs: " << ::std::endl;
         for (const OctantID& octant : octree.leafs()) {
             if (octant.level() == l) {
-                s << "  " << octant << std::endl;
+                s << "  " << octant << ::std::endl;
             }
         }
     }
@@ -50,7 +53,7 @@ void LinearOctree::insert(const OctantID& octant) {
 }
 
 void LinearOctree::insert(container_type::const_iterator begin, container_type::const_iterator end) {
-    assert(std::all_of(begin, end, [this](const OctantID& octant) { return octant >= m_root || octant <= m_deepestLastDecendant; }));
+    assert(::std::all_of(begin, end, [this](const OctantID& octant) { return octant >= m_root || octant <= m_deepestLastDecendant; }));
     m_leafs.insert(m_leafs.end(), begin, end);
 }
 
@@ -59,10 +62,10 @@ bool LinearOctree::hasLeaf(const OctantID& octant) const {
         return false;
     }
 
-    return std::find(m_leafs.begin(), m_leafs.end(), octant) != m_leafs.end();
+    return ::std::find(m_leafs.begin(), m_leafs.end(), octant) != m_leafs.end();
 }
 
-std::vector<OctantID> LinearOctree::replaceWithChildren(const OctantID& octant) {
+::std::vector<OctantID> LinearOctree::replaceWithChildren(const OctantID& octant) {
     auto children = octant.children();
 
     replaceWithSubtree(octant, children);
@@ -70,18 +73,18 @@ std::vector<OctantID> LinearOctree::replaceWithChildren(const OctantID& octant) 
     return children;
 }
 
-void LinearOctree::replaceWithSubtree(const OctantID& octant, const std::vector<OctantID>& subtree) {
+void LinearOctree::replaceWithSubtree(const OctantID& octant, const ::std::vector<OctantID>& subtree) {
     if (!insideTreeBounds(octant)) {
-        throw std::runtime_error("LinearOctree::replaceWithSubtree: Invalid parameter octant out of bounds.");
+        throw ::std::runtime_error("LinearOctree::replaceWithSubtree: Invalid parameter octant out of bounds.");
     }
 
-    if (m_toRemove.insert(std::make_pair(octant.mcode(), octant.level())).second) {
+    if (m_toRemove.insert(::std::make_pair(octant.mcode(), octant.level())).second) {
         m_leafs.insert(m_leafs.end(), subtree.begin(), subtree.end());
     }
 }
 
 bool LinearOctree::maximumLowerBound(const OctantID& octant, OctantID& lowerBound) const {
-    auto it = std::lower_bound(m_leafs.begin(), m_leafs.end(), octant);
+    auto it = ::std::lower_bound(m_leafs.begin(), m_leafs.end(), octant);
 
     if (it != m_leafs.begin()) {
         --it;
@@ -109,7 +112,7 @@ OctantID LinearOctree::deepestFirstDecendant() const {
 
 void LinearOctree::sortAndRemove() {
     if (!m_toRemove.empty()) {
-        m_leafs.erase(std::remove_if(m_leafs.begin(), m_leafs.end(), [this](const OctantID& octant) {
+        m_leafs.erase(::std::remove_if(m_leafs.begin(), m_leafs.end(), [this](const OctantID& octant) {
             auto it = m_toRemove.find(octant.mcode());
             if (it != m_toRemove.end() && it->second == octant.level()) {
                 return true;
@@ -123,4 +126,5 @@ void LinearOctree::sortAndRemove() {
 
 void LinearOctree::reserve(const size_t numLeafs) {
     m_leafs.reserve(numLeafs);
+}
 }

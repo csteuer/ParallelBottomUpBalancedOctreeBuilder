@@ -2,8 +2,11 @@
 
 #include <octantid.h>
 #include <linearoctree.h>
+#include <mortoncode_utils.h>
 
 #include <vector_utils.h>
+
+using namespace octreebuilder;
 
 TEST(OctantIDTest, coordinateConstructorTest) {
     EXPECT_THAT(OctantID(Vector3i(0), 0), ::testing::Property(&OctantID::mcode, ::testing::Eq(getMortonCodeForCoordinate(Vector3i(0)))));
@@ -247,4 +250,67 @@ TEST(OctantIDTest, isBoundaryOctantVectorParameters) {
 
     EXPECT_TRUE(OctantID(Vector3i(6, 6, 4), 1).isBoundaryOctant(Vector3i(4, 4, 4), Vector3i(7, 7, 7), Vector3i(0, 0, 0), Vector3i(7, 7, 7)));
     EXPECT_FALSE(OctantID(Vector3i(6, 6, 6), 1).isBoundaryOctant(Vector3i(4, 4, 4), Vector3i(7, 7, 7), Vector3i(0, 0, 0), Vector3i(7, 7, 7)));
+}
+
+TEST(OctantIDTest, getSearchKeysTest) {
+    const LinearOctree octree(OctantID(0, 4));
+
+    // All search keys of the lower left front node are outside of the domain
+    auto searchKeys = OctantID(Vector3i(0), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
+
+    // ... no matter which level
+    searchKeys = OctantID(Vector3i(0), 4).getSearchKeys(LinearOctree(OctantID(0, 5)));
+    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
+
+    searchKeys = OctantID(Vector3i(1, 0, 0), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::ElementsAre(OctantID(Vector3i(2, 0, 0), 0)));
+
+    searchKeys = OctantID(Vector3i(0, 1, 0), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::ElementsAre(OctantID(Vector3i(0, 2, 0), 0)));
+
+    searchKeys = OctantID(Vector3i(0, 0, 1), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::ElementsAre(OctantID(Vector3i(0, 0, 2), 0)));
+
+    searchKeys = OctantID(Vector3i(1, 0, 1), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 0, 1), 0), OctantID(Vector3i(2, 0, 2), 0), OctantID(Vector3i(1, 0, 2), 0)));
+
+    searchKeys = OctantID(Vector3i(1, 1, 0), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 1, 0), 0), OctantID(Vector3i(2, 2, 0), 0), OctantID(Vector3i(1, 2, 0), 0)));
+
+    searchKeys = OctantID(Vector3i(0, 1, 1), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(0, 2, 1), 0), OctantID(Vector3i(0, 2, 2), 0), OctantID(Vector3i(0, 1, 2), 0)));
+
+    searchKeys = OctantID(Vector3i(1, 1, 1), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 1, 1), 0), OctantID(Vector3i(1, 2, 1), 0), OctantID(Vector3i(1, 1, 2), 0),
+                                                            OctantID(Vector3i(2, 2, 1), 0), OctantID(Vector3i(2, 1, 2), 0), OctantID(Vector3i(1, 2, 2), 0),
+                                                            OctantID(Vector3i(2, 2, 2), 0)));
+
+    searchKeys = OctantID(Vector3i(4, 4, 2), 1).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 4, 4), 0), OctantID(Vector3i(4, 3, 4), 0), OctantID(Vector3i(4, 4, 4), 0),
+                                                            OctantID(Vector3i(3, 3, 4), 0), OctantID(Vector3i(3, 4, 3), 0), OctantID(Vector3i(4, 3, 3), 0),
+                                                            OctantID(Vector3i(3, 3, 3), 0)));
+
+    searchKeys = OctantID(Vector3i(4, 4, 4), 1).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 4, 4), 0), OctantID(Vector3i(4, 3, 4), 0), OctantID(Vector3i(4, 4, 3), 0),
+                                                            OctantID(Vector3i(3, 3, 4), 0), OctantID(Vector3i(3, 4, 3), 0), OctantID(Vector3i(4, 3, 3), 0),
+                                                            OctantID(Vector3i(3, 3, 3), 0)));
+
+    searchKeys = OctantID(Vector3i(4, 6, 4), 1).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 8, 4), 0), OctantID(Vector3i(4, 8, 4), 0), OctantID(Vector3i(4, 8, 3), 0),
+                                                            OctantID(Vector3i(3, 7, 4), 0), OctantID(Vector3i(3, 8, 3), 0), OctantID(Vector3i(4, 7, 3), 0),
+                                                            OctantID(Vector3i(3, 7, 3), 0)));
+
+    // All search keys of the upper right back node are outside of the domain
+    searchKeys = OctantID(Vector3i(8, 8, 8), 3).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
+
+    searchKeys = OctantID(Vector3i(12, 12, 12), 2).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
+
+    searchKeys = OctantID(Vector3i(14, 14, 14), 1).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
+
+    searchKeys = OctantID(Vector3i(15, 15, 15), 0).getSearchKeys(octree);
+    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
 }

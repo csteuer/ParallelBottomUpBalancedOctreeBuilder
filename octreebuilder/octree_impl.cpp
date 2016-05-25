@@ -10,12 +10,17 @@
 #include "logging.h"
 #include <iomanip>
 
+#include <atomic>
+
 #include "box.h"
 
 #include "linearoctree.h"
 #include "octantid.h"
+#include "mortoncode_utils.h"
 
-OctreeImpl::OctreeImpl(std::vector<std::unordered_set<morton_t>> tree) : m_tree(std::move(tree)) {
+namespace octreebuilder {
+
+OctreeImpl::OctreeImpl(::std::vector<::std::unordered_set<morton_t>> tree) : m_tree(::std::move(tree)) {
     size_t numLeafs = 0;
     for (const auto& leafSet : tree) {
         numLeafs += leafSet.size();
@@ -38,9 +43,9 @@ OctreeImpl::OctreeImpl(LinearOctree&& linearOctree) : m_bounding(Box(getMaxXYZFo
     PerfCounter perfCounter;
 
     perfCounter.start();
-    m_tree = std::vector<std::unordered_set<morton_t>>(linearOctree.depth() + 1);
+    m_tree = ::std::vector<::std::unordered_set<morton_t>>(linearOctree.depth() + 1);
     {
-        std::vector<size_t> numLeafsPerLevel(linearOctree.depth() + 1, 0);
+        ::std::vector<size_t> numLeafsPerLevel(linearOctree.depth() + 1, 0);
         for (const OctantID& node : linearOctree.leafs()) {
             numLeafsPerLevel.at(node.level())++;
         }
@@ -49,15 +54,15 @@ OctreeImpl::OctreeImpl(LinearOctree&& linearOctree) : m_bounding(Box(getMaxXYZFo
             m_tree.at(i).reserve(numLeafsPerLevel.at(i));
         }
     }
-    LOG_PROF(std::left << std::setw(30) << "Allocated set tree: " << perfCounter);
+    LOG_PROF(::std::left << ::std::setw(30) << "Allocated set tree: " << perfCounter);
 
     perfCounter.start();
     for (const OctantID& node : linearOctree.leafs()) {
         m_tree.at(node.level()).insert(node.mcode());
     }
-    LOG_PROF(std::left << std::setw(30) << "Filled set tree: " << perfCounter);
+    LOG_PROF(::std::left << ::std::setw(30) << "Filled set tree: " << perfCounter);
 
-    m_linearTree = std::move(linearOctree);
+    m_linearTree = ::std::move(linearOctree);
 }
 
 Vector3i OctreeImpl::getMaxXYZ() const {
@@ -79,7 +84,7 @@ uint OctreeImpl::getMaxLevel() const {
         return 0;
     }
 
-    throw std::runtime_error("Can't determine the maximum level of an empty octree.");
+    throw ::std::runtime_error("Can't determine the maximum level of an empty octree.");
 }
 
 size_t OctreeImpl::getNumNodes() const {
@@ -108,8 +113,8 @@ OctreeNode OctreeImpl::tryGetNodeAt(const Vector3i& llf, uint level) const {
     return OctreeNode();
 }
 
-std::vector<OctreeNode> OctreeImpl::getNeighbourNodes(const OctreeNode& n, OctreeNode::Face sharedFace) const {
-    std::vector<OctreeNode> neighbourNodes;
+::std::vector<OctreeNode> OctreeImpl::getNeighbourNodes(const OctreeNode& n, OctreeNode::Face sharedFace) const {
+    ::std::vector<OctreeNode> neighbourNodes;
 
     if (n.getLevel() == getDepth()) {
         // n is root node... no neighbours (note: this should rarely happen as it means that the tree is empty)
@@ -146,8 +151,8 @@ std::vector<OctreeNode> OctreeImpl::getNeighbourNodes(const OctreeNode& n, Octre
     }
 
     // check child level... obviously the neighbours at the child level must be children of the neighbour node n's level
-    const std::array<morton_t, 8> possibleChildren = getMortonCodesForChildren(possibleNeighbour.mcode(), possibleNeighbour.level());
-    std::array<size_t, 4> neighbourChildrenIndices;
+    const ::std::array<morton_t, 8> possibleChildren = getMortonCodesForChildren(possibleNeighbour.mcode(), possibleNeighbour.level());
+    ::std::array<size_t, 4> neighbourChildrenIndices;
 
     // get the indices of the 4 neighbour nodes in possibleChildren
     switch (sharedFace) {
@@ -184,7 +189,7 @@ std::vector<OctreeNode> OctreeImpl::getNeighbourNodes(const OctreeNode& n, Octre
             // 4 neighbours at the child level
             LOG_ERROR("Node " << n << " of space filling octree " << *this << " has no neighbour at same or +1/-1 level for face " << sharedFace
                               << " but is not a boundary node for that face. Failed last possible test for neighbour of child level: " << childNode);
-            throw std::runtime_error("Invalid parameter 'n' or invalid octree.");
+            throw ::std::runtime_error("Invalid parameter 'n' or invalid octree.");
         }
 
         neighbourNodes.push_back(childNode);
@@ -228,14 +233,22 @@ Octree::OctreeState OctreeImpl::checkState() const {
     }
 
     // Check balanced
-    /*
-    bool valid = false;
-    for (size_t i = 0; i < getNumNodes(); i++) {
-        for (OctreeNode::Face f : { OctreeNode::LEFT, OctreeNode::RIGHT, OctreeNode::FRONT, OctreeNode::BACK, OctreeNode::TOP, OctreeNode::BOTTOM }) {
+    for (size_t i = 0; i < m_linearTree.leafs().size(); i++) {
+        const OctantID& octant = m_linearTree.leafs().at(i);
 
+        for (const OctantID& searchKey : octant.getSearchKeys(m_linearTree)) {
+            OctantID neighbour;
+            if (!m_linearTree.maximumLowerBound(searchKey, neighbour) || !searchKey.isDecendantOf(neighbour)) {
+                continue;
+            }
+
+            if ((neighbour.level() > octant.level() && neighbour.level() - octant.level() > 1) ||
+                (neighbour.level() < octant.level() && octant.level() - neighbour.level() > 1)) {
+                return Octree::OctreeState::UNBALANCED;
+            }
         }
     }
-    */
 
     return Octree::OctreeState::VALID;
+}
 }

@@ -2,6 +2,8 @@
 
 #include <box.h>
 
+using namespace octreebuilder;
+
 TEST(BoxTest, equalityTest) {
     EXPECT_EQ(Box(Vector3i(0), Vector3i(3)), Box(Vector3i(0), Vector3i(3)));
 

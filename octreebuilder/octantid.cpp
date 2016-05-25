@@ -1,9 +1,12 @@
 #include "octantid.h"
 
 #include "linearoctree.h"
+#include "mortoncode_utils.h"
 
 #include <ostream>
 #include <assert.h>
+
+namespace octreebuilder {
 
 OctantID::OctantID() : m_mcode(0), m_level(0) {
 }
@@ -36,12 +39,12 @@ OctantID OctantID::ancestorAtLevel(uint level) const {
     return OctantID(ancestorCode, level);
 }
 
-std::vector<OctantID> OctantID::children() const {
+::std::vector<OctantID> OctantID::children() const {
     if (m_level == 0) {
-        throw std::runtime_error("OctantID::children: A level 0 node has no children.");
+        throw ::std::runtime_error("OctantID::children: A level 0 node has no children.");
     }
 
-    std::vector<OctantID> result;
+    ::std::vector<OctantID> result;
     result.reserve(8);
 
     auto mcodes = getMortonCodesForChildren(m_mcode, m_level);
@@ -61,7 +64,7 @@ bool OctantID::isDecendantOf(const OctantID& possibleAncestor) const {
     return isMortonCodeDecendant(m_mcode, m_level, possibleAncestor.m_mcode, possibleAncestor.m_level);
 }
 
-constexpr std::array<Vector3i, 26> neighbour_offsets = {
+constexpr ::std::array<Vector3i, 26> neighbour_offsets = {
     {Vector3i(-1, -1, -1), Vector3i(0, -1, -1), Vector3i(1, -1, -1), Vector3i(-1, 0, -1), Vector3i(0, 0, -1),
      Vector3i(1, 0, -1), Vector3i(-1, 1, -1), Vector3i(0, 1, -1), Vector3i(1, 1, -1), Vector3i(-1, -1, 0),
      Vector3i(0, -1, 0), Vector3i(1, -1, 0), Vector3i(-1, 0, 0), Vector3i(1, 0, 0), Vector3i(-1, 1, 0),
@@ -69,8 +72,8 @@ constexpr std::array<Vector3i, 26> neighbour_offsets = {
      Vector3i(-1, 0, 1), Vector3i(0, 0, 1), Vector3i(1, 0, 1), Vector3i(-1, 1, 1), Vector3i(0, 1, 1),
      Vector3i(1, 1, 1)}};
 
-std::vector<OctantID> OctantID::potentialNeighbours(const LinearOctree& octree) const {
-    std::vector<OctantID> result;
+::std::vector<OctantID> OctantID::potentialNeighbours(const LinearOctree& octree) const {
+    ::std::vector<OctantID> result;
 
     if (!octree.insideTreeBounds(*this)) {
         return result;
@@ -94,8 +97,8 @@ std::vector<OctantID> OctantID::potentialNeighbours(const LinearOctree& octree) 
     return result;
 }
 
-std::vector<OctantID> OctantID::potentialNeighboursWithoutSiblings(const LinearOctree& octree) const {
-    std::vector<OctantID> result;
+::std::vector<OctantID> OctantID::potentialNeighboursWithoutSiblings(const LinearOctree& octree) const {
+    ::std::vector<OctantID> result;
 
     if (!octree.insideTreeBounds(*this)) {
         return result;
@@ -147,6 +150,27 @@ bool OctantID::isBoundaryOctant(const Vector3i& blockLLF, const Vector3i& blockU
     return componentwiseAEqBAndNotEqC(octantLLF, blockLLF, treeLLF) || componentwiseAEqBAndNotEqC(octantURB, blockURB, treeURB);
 }
 
+constexpr ::std::array<Vector3i, 8> searchCornerOffsets{{Vector3i(0, 0, 0), Vector3i(-1, 0, 0), Vector3i(0, -1, 0), Vector3i(-1, -1, 0), Vector3i(0, 0, -1),
+                                                       Vector3i(-1, 0, -1), Vector3i(0, -1, -1), Vector3i(-1, -1, -1)}};
+
+::std::vector<OctantID> OctantID::getSearchKeys(const LinearOctree& octree) const {
+    ::std::vector<OctantID> searchKeys;
+    searchKeys.reserve(7);
+
+    Vector3i searchCorner = getSearchCorner(this->mcode(), this->level());
+
+    for (const Vector3i& coord : searchCornerOffsets) {
+        Vector3i searchKeyLLF = searchCorner + coord;
+        OctantID searchKey(searchKeyLLF, 0);
+
+        if (searchKey != *this && octree.insideTreeBounds(searchKey) && !searchKey.isDecendantOf(*this)) {
+            searchKeys.push_back(searchKey);
+        }
+    }
+
+    return searchKeys;
+}
+
 bool operator<(const OctantID& left, const OctantID& right) {
     if (left.mcode() != right.mcode()) {
         return left.mcode() < right.mcode();
@@ -183,7 +207,8 @@ bool operator!=(const OctantID& a, const OctantID& b) {
     return a.level() != b.level() || a.mcode() != b.mcode();
 }
 
-std::ostream& operator<<(std::ostream& s, const OctantID& n) {
+::std::ostream& operator<<(::std::ostream& s, const OctantID& n) {
     s << "{ mcode: " << n.mcode() << ", llf: " << n.coord() << ", level: " << n.level() << "}";
     return s;
+}
 }

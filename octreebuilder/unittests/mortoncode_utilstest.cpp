@@ -1,24 +1,26 @@
 #include <gmock/gmock.h>
-#include <mortoncode.h>
+#include <mortoncode_utils.h>
 #include <vector_utils.h>
 
 #include <limits>
 
-TEST(MortonCodeTest, fitsInMortonCodeTest) {
+using namespace octreebuilder;
+
+TEST(MortonCodeUtilsTest, fitsInMortonCodeUtilsTest) {
     EXPECT_FALSE(fitsInMortonCode(Vector3i(std::numeric_limits<coord_t>::max())));
     EXPECT_TRUE(fitsInMortonCode(Vector3i(10000, 10000, 10000)));
     EXPECT_TRUE(fitsInMortonCode(Vector3i(100000, 100000, 100000)));
     EXPECT_TRUE(fitsInMortonCode(Vector3i(1000000, 1000000, 1000000)));
 }
 
-TEST(MortonCodeTest, getMaxLevelsForBoundingTest) {
+TEST(MortonCodeUtilsTest, getMaxLevelsForBoundingTest) {
     EXPECT_EQ(3, getOctreeDepthForBounding(Vector3i(7, 7, 7)));
     EXPECT_EQ(3, getOctreeDepthForBounding(Vector3i(7, 7, 0)));
 
     EXPECT_EQ(4, getOctreeDepthForBounding(Vector3i(8, 7, 7)));
 }
 
-TEST(MortonCodeTest, getMaxXYZForOctreeDepthTest) {
+TEST(MortonCodeUtilsTest, getMaxXYZForOctreeDepthTest) {
     EXPECT_EQ(Vector3i(0), getMaxXYZForOctreeDepth(0));
     EXPECT_EQ(Vector3i(1, 1, 1), getMaxXYZForOctreeDepth(1));
     EXPECT_EQ(Vector3i(3, 3, 3), getMaxXYZForOctreeDepth(2));
@@ -26,14 +28,14 @@ TEST(MortonCodeTest, getMaxXYZForOctreeDepthTest) {
     EXPECT_EQ(Vector3i(15, 15, 15), getMaxXYZForOctreeDepth(4));
 }
 
-TEST(MortonCodeTest, getNodeSizeForLevelTest) {
+TEST(MortonCodeUtilsTest, getNodeSizeForLevelTest) {
     EXPECT_EQ(1, getOctantSizeForLevel(0));
     EXPECT_EQ(2, getOctantSizeForLevel(1));
     EXPECT_EQ(4, getOctantSizeForLevel(2));
     EXPECT_EQ(8, getOctantSizeForLevel(3));
 }
 
-TEST(MortonCodeTest, getMortonCodeForCoordinateTest) {
+TEST(MortonCodeUtilsTest, getMortonCodeForCoordinateTest) {
     EXPECT_EQ(0, getMortonCodeForCoordinate(Vector3i(0)));
     EXPECT_EQ(1, getMortonCodeForCoordinate(Vector3i(0, 0, 1)));
     EXPECT_EQ(2, getMortonCodeForCoordinate(Vector3i(0, 1, 0)));
@@ -47,7 +49,7 @@ TEST(MortonCodeTest, getMortonCodeForCoordinateTest) {
     EXPECT_EQ(5376, getMortonCodeForCoordinate(Vector3i(4, 8, 16)));
 }
 
-TEST(MortonCodeTest, getCoordinateForMortonCodeTest) {
+TEST(MortonCodeUtilsTest, getCoordinateForMortonCodeUtilsTest) {
     EXPECT_EQ(Vector3i(0), getCoordinateForMortonCode(0));
     EXPECT_EQ(Vector3i(1, 1, 1), getCoordinateForMortonCode(7));
     EXPECT_EQ(Vector3i(3, 0, 3), getCoordinateForMortonCode(45));
@@ -56,7 +58,7 @@ TEST(MortonCodeTest, getCoordinateForMortonCodeTest) {
     EXPECT_EQ(Vector3i(4, 31, 52), getCoordinateForMortonCode(46546));
 }
 
-TEST(MortonCodeTest, getMortonCodeForParentTest) {
+TEST(MortonCodeUtilsTest, getMortonCodeForParentTest) {
     EXPECT_EQ(8, getMortonCodeForParent(8, 0));   // (0, 0, 2)
     EXPECT_EQ(8, getMortonCodeForParent(9, 0));   // (0, 0, 3)
     EXPECT_EQ(8, getMortonCodeForParent(10, 0));  // (0, 1, 2)
@@ -70,7 +72,7 @@ TEST(MortonCodeTest, getMortonCodeForParentTest) {
     EXPECT_EQ(192, getMortonCodeForParent(239, 1));  // Ignore bits of level 0
 }
 
-TEST(MortonCodeTest, getMortonCodeForAncestorTest) {
+TEST(MortonCodeUtilsTest, getMortonCodeForAncestorTest) {
     EXPECT_EQ(0, getMortonCodeForAncestor(0, 0, 4));
 
     EXPECT_EQ(getMortonCodeForCoordinate(Vector3i(4, 4, 0)), getMortonCodeForAncestor(getMortonCodeForCoordinate(Vector3i(4, 4, 0)), 0, 2));
@@ -87,7 +89,7 @@ TEST(MortonCodeTest, getMortonCodeForAncestorTest) {
     EXPECT_ANY_THROW(getMortonCodeForAncestor(0, 1, 0));
 }
 
-TEST(MortonCodeTest, getMortonCodesForChildrenTest) {
+TEST(MortonCodeUtilsTest, getMortonCodesForChildrenTest) {
     EXPECT_ANY_THROW(getMortonCodesForChildren(getMortonCodeForCoordinate({0, 0, 0}), 0)) << "Leaf nodes can't have children.";
 
     // Test for direct parent of leaf nodes (most simple case parent at origin)
@@ -106,7 +108,7 @@ TEST(MortonCodeTest, getMortonCodesForChildrenTest) {
                 ::testing::ElementsAre(0, 8, 16, 24, 32, 40, 48, 56));
 }
 
-TEST(MortonCodeTest, getMortonCodesForNeighbourNodesTest) {
+TEST(MortonCodeUtilsTest, getMortonCodesForNeighbourNodesTest) {
     // current level must not be greater than the depth of the tree
     EXPECT_ANY_THROW(getMortonCodesForNeighbourOctants(getMortonCodeForCoordinate({0, 0, 0}), 1, 0));
 
@@ -171,7 +173,7 @@ TEST(MortonCodeTest, getMortonCodesForNeighbourNodesTest) {
                                                       getMortonCodeForCoordinate({6, 6, 4})}));
 }
 
-TEST(MortonCodeTest, getMortonCodesForNeighbourNodesWithRootNotAtOriginTest) {
+TEST(MortonCodeUtilsTest, getMortonCodesForNeighbourNodesWithRootNotAtOriginTest) {
     ASSERT_THAT(
         getMortonCodesForNeighbourOctants(getMortonCodeForCoordinate({4, 4, 4}), 0, 2, Vector3i(4, 4, 4)),
         ::testing::UnorderedElementsAre(getMortonCodeForCoordinate({5, 4, 4}), getMortonCodeForCoordinate({4, 5, 4}), getMortonCodeForCoordinate({4, 4, 5}),
@@ -194,7 +196,7 @@ TEST(MortonCodeTest, getMortonCodesForNeighbourNodesWithRootNotAtOriginTest) {
                                         getMortonCodeForCoordinate({4, 6, 6})));
 }
 
-TEST(MortonCodeTest, getMaxLevelOfLLFTest) {
+TEST(MortonCodeUtilsTest, getMaxLevelOfLLFTest) {
     EXPECT_EQ(3, getMaxLevelOfLLF(Vector3i(0), 3));
 
     EXPECT_EQ(3, getMaxLevelOfLLF(Vector3i(0, 0, 8), 3));
@@ -225,7 +227,7 @@ TEST(MortonCodeTest, getMaxLevelOfLLFTest) {
     EXPECT_EQ(3, getMaxLevelOfLLF(Vector3i(16, 8, 56), 5));
 }
 
-TEST(MortonCodeTest, getSearchCornerTest) {
+TEST(MortonCodeUtilsTest, getSearchCornerTest) {
     ASSERT_EQ(Vector3i(0), getSearchCorner(getMortonCodeForCoordinate(Vector3i(0)), 0));
     ASSERT_EQ(Vector3i(2, 0, 0), getSearchCorner(getMortonCodeForCoordinate(Vector3i(1, 0, 0)), 0));
     ASSERT_EQ(Vector3i(2, 2, 0), getSearchCorner(getMortonCodeForCoordinate(Vector3i(1, 1, 0)), 0));
@@ -249,7 +251,7 @@ TEST(MortonCodeTest, getSearchCornerTest) {
     ASSERT_EQ(Vector3i(4, 4, 4), getSearchCorner(getMortonCodeForCoordinate(Vector3i(4, 4, 2)), 1));
 }
 
-TEST(MortonCodeTest, isDecendantTest) {
+TEST(MortonCodeUtilsTest, isDecendantTest) {
     ASSERT_FALSE(isMortonCodeDecendant(0, 0, 0, 0));
     ASSERT_FALSE(isMortonCodeDecendant(0, 1, 0, 0));
     ASSERT_TRUE(isMortonCodeDecendant(0, 0, 0, 1));
@@ -272,7 +274,7 @@ TEST(MortonCodeTest, isDecendantTest) {
     }
 }
 
-TEST(MortonCodeTest, nearestCommonAncestoTest) {
+TEST(MortonCodeUtilsTest, nearestCommonAncestoTest) {
     ASSERT_THAT(nearestCommonAncestor(0, 0, 0, 0), ::testing::Eq(std::make_pair(morton_t(0), 0u)));
     ASSERT_THAT(nearestCommonAncestor(0, 1, 0, 0), ::testing::Eq(std::make_pair(morton_t(0), 1u)));
 

@@ -5,12 +5,10 @@ message(STATUS "Configuring for platform Linux/GCC.")
 execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
 	OUTPUT_VARIABLE GCC_VERSION)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(LINUX_COMPILE_DEFS
 	LINUX	                  # Linux system
-        PIC		          # Position-independent code
-	_REENTRANT                # Reentrant code
 )
 set(DEFAULT_COMPILE_DEFS_DEBUG
     ${LINUX_COMPILE_DEFS}
@@ -96,6 +94,3 @@ set(DEFAULT_LINKER_FLAGS_RELWITHDEBINFO ${LINUX_LINKER_FLAGS})
 set(DEFAULT_LINKER_FLAGS_RELEASE ${LINUX_LINKER_FLAGS})
 set(DEFAULT_LINKER_FLAGS_DEBUG ${LINUX_LINKER_FLAGS})
 set(DEFAULT_LINKER_FLAGS ${LINUX_LINKER_FLAGS})
-
-# Add platform specific libraries for linking
-set(EXTRA_LIBS "")

@@ -1,4 +1,4 @@
-set(target octreebuilder-tests)
+set(target octreebuilder-unittests)
 
 include_directories(
     ${GTEST_INCLUDE_DIR}
@@ -6,26 +6,10 @@ include_directories(
 )
 
 set(sources
-    ../octree.cpp
-    ../octreebuilder.cpp
-    ../octree_impl.cpp
-    ../octreenode.cpp
-    ../box.cpp
-    ../linearoctree.cpp
-    ../mortoncode.cpp
-    ../octantid.cpp
-    ../octree_utils.cpp
-    ../paralleloctreebuilder.cpp
-    ../sequentialoctreebuilder.cpp
-    ../vector3i.cpp
-    ../vector_utils.cpp
-    ../perfcounter.cpp
-
-    octreebuildertest.cpp
     octreetest.cpp
     boxtest.cpp
     linearoctreetest.cpp  
-    mortoncodetest.cpp  
+    mortoncode_utilstest.cpp
     octantidtest.cpp  
     octree_utilstest.cpp
     vector_utilstest.cpp
@@ -39,9 +23,11 @@ set_target_properties(${target}
     PROPERTIES
     LINKER_LANGUAGE             CXX
     FOLDER                      ""
+    COMPILE_DEFINITIONS                 "${DEFAULT_COMPILE_DEFS}"
     COMPILE_DEFINITIONS_DEBUG           "${DEFAULT_COMPILE_DEFS_DEBUG}"
     COMPILE_DEFINITIONS_RELEASE         "${DEFAULT_COMPILE_DEFS_RELEASE}"
     COMPILE_DEFINITIONS_RELWITHDEBINFO  "${DEFAULT_COMPILE_DEFS_RELWITHDEBINFO}"
+    LINK_FLAGS                          "${DEFAULT_LINKER_FLAGS}"
     LINK_FLAGS_DEBUG                    "${DEFAULT_LINKER_FLAGS_DEBUG}"
     LINK_FLAGS_RELEASE                  "${DEFAULT_LINKER_FLAGS_RELEASE}"
     LINK_FLAGS_RELWITHDEBINFO           "${DEFAULT_LINKER_FLAGS_RELWITHDEBINFO}"
@@ -52,6 +38,7 @@ set_target_properties(${target}
 
 
 target_link_libraries(${target}
+    octreebuilder
     gmock
     gmock_main
     ${TCMALLOC_LIBRARIES}

@@ -1,9 +1,13 @@
 #include "octreenode.h"
 
+#include "mortoncode_utils.h"
+
 #include <limits>
 #include <ostream>
 
-OctreeNode::OctreeNode() : m_morton_llf(std::numeric_limits<morton_t>::max()), m_level(std::numeric_limits<uint>::max()) {
+namespace octreebuilder {
+
+OctreeNode::OctreeNode() : m_morton_llf(::std::numeric_limits<morton_t>::max()), m_level(::std::numeric_limits<uint>::max()) {
 }
 
 OctreeNode::OctreeNode(morton_t morton_encoded_llf, uint level) : m_morton_llf(morton_encoded_llf), m_level(level) {
@@ -66,7 +70,7 @@ bool OctreeNode::operator!=(const OctreeNode& o) const {
     return m_level != o.getLevel() && m_morton_llf != o.getMortonEncodedLLF();
 }
 
-std::ostream& operator<<(std::ostream& s, const OctreeNode::Face& f) {
+::std::ostream& operator<<(::std::ostream& s, const OctreeNode::Face& f) {
     switch (f) {
         case OctreeNode::Face::LEFT:
             s << "LEFT";
@@ -89,4 +93,5 @@ std::ostream& operator<<(std::ostream& s, const OctreeNode::Face& f) {
     }
 
     return s;
+}
 }

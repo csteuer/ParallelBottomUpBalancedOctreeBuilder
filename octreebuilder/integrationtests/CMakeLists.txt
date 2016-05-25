@@ -1,15 +1,17 @@
-set(target benchmarks)
-
-set(SOURCES
-    octreebuilderbenchmark.cpp
-)
+set(target octreebuilder-integrationtests)
 
 include_directories(
-    ${HAYAI_INCLUDE_DIRS}
-    ${CMAKE_SOURCE_DIR}
+    ${GTEST_INCLUDE_DIR}
+    ${GMOCK_INCLUDE_DIR}
 )
 
-add_executable(${target} ${SOURCES})
+set(sources
+    octreebuildertest.cpp
+)
+
+add_executable(${target} ${sources})
+
+add_test(${target} ${target})
 
 set_target_properties(${target}
     PROPERTIES
@@ -26,22 +28,16 @@ set_target_properties(${target}
     STATIC_LIBRARY_FLAGS_DEBUG          "${DEFAULT_LIBRARIAN_FLAGS_DEBUG}"
     STATIC_LIBRARY_FLAGS_RELEASE        "${DEFAULT_LIBRARIAN_FLAGS_RELEASE}"
     STATIC_LIBRARY_FLAGS_RELWITHDEBINFO "${DEFAULT_LIBRARIAN_FLAGS_RELWITHDEBINFO}"
-    DEBUG_POSTFIX               "d")
+    DEBUG_POSTFIX               "") # No debug postfix so that gtest runner for visual studio finds the test in debug mode
 
-if(UNIX)
-    target_compile_options(${target} PRIVATE
-        ${DEFAULT_COMPILE_FLAGS}
-        -Wno-reserved-id-macro
-        -Wno-exit-time-destructors
-        -Wno-global-constructors
-        -Wno-weak-vtables)
-else()
-    target_compile_options(${target} PRIVATE ${DEFAULT_COMPILE_FLAGS})
-endif()
 
 target_link_libraries(${target}
-    ${HAYAI_LIBRARIES}
-    ${GPERFTOOLS_LIBRARIES}
+	octreebuilder
+    gmock
+    gmock_main
     ${TCMALLOC_LIBRARIES}
-    octreebuilder
 )
+
+
+target_compile_options(${target} PRIVATE ${LINUX_TEST_COMPILE_FLAGS})
+

@@ -2,7 +2,9 @@
 
 #include <octree_impl.h>
 #include <vector_utils.h>
-#include <mortoncode.h>
+#include <mortoncode_utils.h>
+
+using namespace octreebuilder;
 
 class OctreeTest : public ::testing::Test {
 protected:

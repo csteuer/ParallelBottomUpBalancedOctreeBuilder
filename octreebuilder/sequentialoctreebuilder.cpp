@@ -1,4 +1,5 @@
 #include "sequentialoctreebuilder.h"
+#include "mortoncode_utils.h"
 
 #include "octree_impl.h"
 #include "octree_utils.h"
@@ -7,9 +8,11 @@
 #include "logging.h"
 #include <iomanip>
 
+namespace octreebuilder {
+
 SequentialOctreeBuilder::SequentialOctreeBuilder(const Vector3i& maxXYZ, size_t numLevelZeroLeafsHint, uint maxLevel) : OctreeBuilder(maxXYZ, maxLevel) {
     if (!fitsInMortonCode(maxXYZ)) {
-        throw std::runtime_error("Space to large for octree creation.");
+        throw ::std::runtime_error("Space to large for octree creation.");
     }
 
     if (numLevelZeroLeafsHint > 0) {
@@ -25,21 +28,22 @@ morton_t SequentialOctreeBuilder::addLevelZeroLeaf(const Vector3i& c) {
     return mortonCode;
 }
 
-std::unique_ptr<Octree> SequentialOctreeBuilder::finishBuilding() {
-   PerfCounter perfCounter;
+::std::unique_ptr<Octree> SequentialOctreeBuilder::finishBuilding() {
+    PerfCounter perfCounter;
 
-   perfCounter.start();
-   LinearOctree linearOctree(OctantID(0, getOctreeDepthForBounding(m_maxXYZ)), m_levelZeroLeafsSet.size());
+    perfCounter.start();
+    LinearOctree linearOctree(OctantID(0, getOctreeDepthForBounding(m_maxXYZ)), m_levelZeroLeafsSet.size());
 
-   for (const morton_t& mcode : m_levelZeroLeafsSet) {
-       linearOctree.insert(OctantID(mcode, 0));
-   }
+    for (const morton_t& mcode : m_levelZeroLeafsSet) {
+        linearOctree.insert(OctantID(mcode, 0));
+    }
 
-   LOG_PROF(std::left << std::setw(30) << "Created initial tree: " << perfCounter);
+    LOG_PROF(::std::left << ::std::setw(30) << "Created initial tree: " << perfCounter);
 
-   perfCounter.start();
-   createBalancedSubtree(linearOctree, maxLevel());
-   LOG_PROF(std::left << std::setw(30) << "Created balanced tree: " << perfCounter);
+    perfCounter.start();
+    createBalancedSubtree(linearOctree, maxLevel());
+    LOG_PROF(::std::left << ::std::setw(30) << "Created balanced tree: " << perfCounter);
 
-   return std::make_unique<OctreeImpl>(std::move(linearOctree));
+    return ::std::unique_ptr<Octree>(new OctreeImpl(::std::move(linearOctree)));
+}
 }

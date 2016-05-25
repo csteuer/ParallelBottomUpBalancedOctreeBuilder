@@ -4,6 +4,8 @@
 #include <cmath>
 #include <ostream>
 
+namespace octreebuilder {
+
 bool Vector3i::operator==(const Vector3i& o) const {
     return m_x == o.m_x && m_y == o.m_y && m_z == o.m_z;
 }
@@ -21,7 +23,7 @@ coord_t Vector3i::operator[](uint i) const {
         case 2:
             return m_z;
         default:
-            throw std::runtime_error("VoxelCoordinate: Array access parameter out of bounds. Expected number between 0 and 2");
+            throw ::std::runtime_error("Vector3i: Array access parameter out of bounds. Expected number between 0 and 2");
     }
 }
 
@@ -34,7 +36,7 @@ coord_t& Vector3i::operator[](uint i) {
         case 2:
             return m_z;
         default:
-            throw std::runtime_error("VoxelCoordinate: Array access parameter out of bounds. Expected number between 0 and 2");
+            throw ::std::runtime_error("Vector3i: Array access parameter out of bounds. Expected number between 0 and 2");
     }
 }
 
@@ -59,7 +61,7 @@ bool Vector3i::operator<(const Vector3i& o) const {
 }
 
 Vector3i Vector3i::abs() const {
-    return Vector3i(std::abs(m_x), std::abs(m_y), std::abs(m_z));
+    return Vector3i(::std::abs(m_x), ::std::abs(m_y), ::std::abs(m_z));
 }
 
 coord_t Vector3i::dot(const Vector3i& other) const {
@@ -90,14 +92,14 @@ void Vector3i::setZ(coord_t value) {
     m_z = value;
 }
 
-std::ostream& operator<<(std::ostream& s, const Vector3i& c) {
+::std::ostream& operator<<(::std::ostream& s, const Vector3i& c) {
     s << "(" << c.x() << ", " << c.y() << ", " << c.z() << ")";
     return s;
 }
 
-Vector3i::Vector3i(std::initializer_list<coord_t> init) : m_x(0), m_y(0), m_z(0) {
+Vector3i::Vector3i(::std::initializer_list<coord_t> init) : m_x(0), m_y(0), m_z(0) {
     if (init.size() != 3) {
-        throw std::runtime_error("VoxelCoordinate: Invalid size of initializer_list (requires exactly 3 elements).");
+        throw ::std::runtime_error("Vector3i: Invalid size of initializer_list (requires exactly 3 elements).");
     }
 
     auto it = init.begin();
@@ -126,9 +128,10 @@ Vector3i operator*(const coord_t& scalar, const Vector3i& c) {
 }
 
 Vector3i max(const Vector3i& a, const Vector3i& b) {
-    return Vector3i(std::max(a.x(), b.x()), std::max(a.y(), b.y()), std::max(a.z(), b.z()));
+    return Vector3i(::std::max(a.x(), b.x()), ::std::max(a.y(), b.y()), ::std::max(a.z(), b.z()));
 }
 
 Vector3i min(const Vector3i& a, const Vector3i& b) {
-    return Vector3i(std::min(a.x(), b.x()), std::min(a.y(), b.y()), std::min(a.z(), b.z()));
+    return Vector3i(::std::min(a.x(), b.x()), ::std::min(a.y(), b.y()), ::std::min(a.z(), b.z()));
+}
 }

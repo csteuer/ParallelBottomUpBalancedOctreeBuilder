@@ -6,9 +6,11 @@
 #include "octreebuilder_api.h"
 #include "vector3i.h"
 
+namespace octreebuilder {
+
 class OCTREEBUILDER_API Box {
 public:
-    constexpr Box() : m_llf(Vector3i(std::numeric_limits<coord_t>::max())), m_urb(std::numeric_limits<coord_t>::min()) {
+    constexpr Box() : m_llf(Vector3i(::std::numeric_limits<coord_t>::max())), m_urb(::std::numeric_limits<coord_t>::min()) {
     }
     constexpr Box(const Vector3i& llf, const Vector3i& urb) : m_llf(llf), m_urb(urb) {
     }
@@ -22,7 +24,7 @@ public:
     coord_t volume() const;
 
     /**
-     * @brief return true if the volume is greater than zero
+     * @brief Returns true if the volume is greater than zero
      */
     bool valid() const;
 
@@ -39,4 +41,5 @@ private:
     Vector3i m_urb;
 };
 
-OCTREEBUILDER_API std::ostream& operator<<(std::ostream& s, const Box& b);
+OCTREEBUILDER_API ::std::ostream& operator<<(::std::ostream& s, const Box& b);
+}

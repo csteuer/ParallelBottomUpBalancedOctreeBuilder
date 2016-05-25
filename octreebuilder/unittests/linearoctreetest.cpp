@@ -5,6 +5,8 @@
 
 #include <vector_utils.h>
 
+using namespace octreebuilder;
+
 TEST(LinearOctreeTest, depthTest) {
     LinearOctree octree(OctantID(Vector3i(0), 4));
     EXPECT_THAT(octree, ::testing::Property(&LinearOctree::depth, ::testing::Eq(4)));
@@ -149,7 +151,7 @@ TEST(LinearOctreeTest, replaceWithChildrenTest) {
     octree.sortAndRemove();
 
     EXPECT_THAT(octree.leafs(),
-                ::testing::ElementsAreArray(std::vector<OctantID>{OctantID(0, 1), OctantID(8, 0), OctantID(9, 0), OctantID(10, 0), OctantID(11, 0),
+                ::testing::ElementsAreArray(::std::vector<OctantID>{OctantID(0, 1), OctantID(8, 0), OctantID(9, 0), OctantID(10, 0), OctantID(11, 0),
                                                                   OctantID(12, 0), OctantID(13, 0), OctantID(14, 0), OctantID(15, 0), OctantID(16, 1),
                                                                   OctantID(24, 1), OctantID(32, 1), OctantID(40, 1), OctantID(48, 1), OctantID(56, 1)}));
 }

@@ -45,14 +45,14 @@ namespace internal {
     //! Destroy sequence [xs,xe)
     template <class RandomAccessIterator>
     void serial_destroy(RandomAccessIterator zs, RandomAccessIterator ze) {
-        typedef typename std::iterator_traits<RandomAccessIterator>::value_type T;
+        typedef typename ::std::iterator_traits<RandomAccessIterator>::value_type T;
         while (zs != ze) {
             --ze;
             (*ze).~T();
         }
     }
 
-    //! Merge sequences [xs,xe) and [ys,ye) to output sequence [zs,(xe-xs)+(ye-ys)), using std::move
+    //! Merge sequences [xs,xe) and [ys,ye) to output sequence [zs,(xe-xs)+(ye-ys)), using ::std::move
     template <class RandomAccessIterator1, class RandomAccessIterator2, class RandomAccessIterator3, class Compare>
     void serial_move_merge(RandomAccessIterator1 xs, RandomAccessIterator1 xe, RandomAccessIterator2 ys, RandomAccessIterator2 ye, RandomAccessIterator3 zs,
                            Compare comp) {
@@ -60,13 +60,13 @@ namespace internal {
             if (ys != ye) {
                 for (;;) {
                     if (comp(*ys, *xs)) {
-                        *zs = std::move(*ys);
+                        *zs = ::std::move(*ys);
                         ++zs;
                         if (++ys == ye) {
                             break;
                         }
                     } else {
-                        *zs = std::move(*xs);
+                        *zs = ::std::move(*xs);
                         ++zs;
                         if (++xs == xe) {
                             goto movey;
@@ -78,15 +78,15 @@ namespace internal {
             ye = xe;
         }
     movey:
-        std::move(ys, ye, zs);
+        ::std::move(ys, ye, zs);
     }
 
     template <typename RandomAccessIterator1, typename RandomAccessIterator2, typename Compare>
     void stable_sort_base_case(RandomAccessIterator1 xs, RandomAccessIterator1 xe, RandomAccessIterator2 zs, int inplace, Compare comp) {
-        std::stable_sort(xs, xe, comp);
+        ::std::stable_sort(xs, xe, comp);
         if (inplace != 2) {
             RandomAccessIterator2 ze = zs + (xe - xs);
-            typedef typename std::iterator_traits<RandomAccessIterator2>::value_type T;
+            typedef typename ::std::iterator_traits<RandomAccessIterator2>::value_type T;
             if (inplace) {
                 // Initialize the temporary buffer
                 for (; zs < ze; ++zs) {
@@ -95,7 +95,7 @@ namespace internal {
             } else {
                 // Initialize the temporary buffer and move keys to it.
                 for (; zs < ze; ++xs, ++zs) {
-                    new (&*zs) T(std::move(*xs));
+                    new (&*zs) T(::std::move(*xs));
                 }
             }
         }
@@ -107,7 +107,7 @@ namespace internal {
 
     public:
         //! Try to obtain buffer of given size.
-        raw_buffer(size_t bytes) : ptr(operator new(bytes, std::nothrow)) {
+        raw_buffer(size_t bytes) : ptr(operator new(bytes, ::std::nothrow)) {
         }
 
         raw_buffer(const raw_buffer&) = delete;
@@ -139,10 +139,10 @@ namespace internal {
             RandomAccessIterator2 ym;
             if (xe - xs < ye - ys) {
                 ym = ys + (ye - ys) / 2;
-                xm = std::upper_bound(xs, xe, *ym, comp);
+                xm = ::std::upper_bound(xs, xe, *ym, comp);
             } else {
                 xm = xs + (xe - xs) / 2;
-                ym = std::lower_bound(ys, ye, *xm, comp);
+                ym = ::std::lower_bound(ys, ye, *xm, comp);
             }
 #pragma omp task untied mergeable firstprivate(xs, xm, ys, ym, zs, destroy, comp)
             parallel_move_merge(xs, xm, ys, ym, zs, destroy, comp);
@@ -185,7 +185,7 @@ namespace internal {
 
 template <typename RandomAccessIterator, typename Compare>
 void parallel_stable_sort(RandomAccessIterator xs, RandomAccessIterator xe, Compare comp) {
-    typedef typename std::iterator_traits<RandomAccessIterator>::value_type T;
+    typedef typename ::std::iterator_traits<RandomAccessIterator>::value_type T;
     internal::raw_buffer z(sizeof(T) * (xe - xs));
     if (z) {
         if (omp_get_num_threads() > 1) {
@@ -197,15 +197,15 @@ void parallel_stable_sort(RandomAccessIterator xs, RandomAccessIterator xe, Comp
         }
     } else {
         // Not enough memory available - fall back on serial sort
-        std::stable_sort(xs, xe, comp);
+        ::std::stable_sort(xs, xe, comp);
     }
 }
 
 //! Wrapper for sorting with default comparator.
 template <class RandomAccessIterator>
 void parallel_stable_sort(RandomAccessIterator xs, RandomAccessIterator xe) {
-    typedef typename std::iterator_traits<RandomAccessIterator>::value_type T;
-    parallel_stable_sort(xs, xe, std::less<T>());
+    typedef typename ::std::iterator_traits<RandomAccessIterator>::value_type T;
+    parallel_stable_sort(xs, xe, ::std::less<T>());
 }
 
 }  // namespace pss

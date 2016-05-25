@@ -5,8 +5,11 @@
 
 #include "vector3i.h"
 
+#include <vector>
 #include <memory>
 #include <iosfwd>
+
+namespace octreebuilder {
 
 class LinearOctree;
 
@@ -21,66 +24,61 @@ class LinearOctree;
  */
 class OCTREEBUILDER_API Octree {
 public:
-
     /**
-     * @brief the most upper right back llf of all possible octree nodes
+     * @brief The most upper right back llf of all possible octree nodes
      */
     virtual Vector3i getMaxXYZ() const = 0;
 
     /**
-     * @brief the depth of the octree (length of path from root node to leaf node)
+     * @brief The depth of the octree (length of path from root node to leaf node)
      */
     virtual uint getDepth() const = 0;
 
     /**
-     * @brief the maximum level over all nodes in the tree
-     * @note throws an error in case of an empty octree
+     * @brief The maximum level over all nodes in the tree
+     * @note Throws an error in case of an empty octree
      */
     virtual uint getMaxLevel() const = 0;
 
     /**
-     * @brief the number of nodes in the octree
+     * @brief The number of nodes in the octree
      */
     virtual size_t getNumNodes() const = 0;
 
     /**
-     * @brief the i-th node in the octree
+     * @brief The i-th node in the octree
      */
     virtual OctreeNode getNode(const size_t& i) const = 0;
 
     /**
-     * @brief returns the node with llf and level
-     * @param llf lower left front vertex of the node
-     * @param level the level of the node
-     * @return the specified node or a invalid node if no such node exists
+     * @brief Returns the node with llf and level
+     * @param llf Lower left front vertex of the node
+     * @param level The level of the node
+     * @return The specified node or a invalid node if no such node exists
      */
     virtual OctreeNode tryGetNodeAt(const Vector3i& llf, uint level) const = 0;
 
     /**
-     * @brief find the neighbour node(s) of n at sharedFace
-     * @param n the node whose neighbours should be found
-     * @param sharedFace the face of n that is shared (completely or partly) with each neighbour node
-     * @return a list of 0 (no neighbours), 1 or 4 nodes that are neighbours of n at sharedFace
+     * @brief Find the neighbour node(s) of n at sharedFace
+     * @param n The node whose neighbours should be found
+     * @param sharedFace The face of n that is shared (completely or partly) with each neighbour node
+     * @return A list of 0 (no neighbours), 1 or 4 nodes that are neighbours of n at sharedFace
      */
-    virtual std::vector<OctreeNode> getNeighbourNodes(const OctreeNode& n, OctreeNode::Face sharedFace) const = 0;
+    virtual ::std::vector<OctreeNode> getNeighbourNodes(const OctreeNode& n, OctreeNode::Face sharedFace) const = 0;
 
-    enum class OctreeState {
-        VALID,
-        INCOMPLETE,
-        OVERLAPPING,
-        UNSORTED,
-        UNBALANCED
-    };
+    enum class OctreeState { VALID, INCOMPLETE, OVERLAPPING, UNSORTED, UNBALANCED };
 
     /**
-     * @brief checks if the octree is 2:1 balanced, sorted and only contains non overlapping leaf nodes that cover the whole space of the tree (complete)
-     * @return true if the octree is valid, false otherwise
+     * @brief Checks if the octree is 2:1 balanced, sorted and only contains non overlapping leaf nodes that cover the whole space of the tree (complete)
+     * @return true If the octree is valid, false otherwise
      */
     virtual OctreeState checkState() const = 0;
 
     virtual ~Octree();
 };
 
-OCTREEBUILDER_API std::ostream& operator<<(std::ostream& s, const OctreeNode& n);
-OCTREEBUILDER_API std::ostream& operator<<(std::ostream& s, const Octree& tree);
-OCTREEBUILDER_API std::ostream& operator<<(std::ostream& s, const std::unique_ptr<Octree>& tree);
+OCTREEBUILDER_API ::std::ostream& operator<<(::std::ostream& s, const OctreeNode& n);
+OCTREEBUILDER_API ::std::ostream& operator<<(::std::ostream& s, const Octree& tree);
+OCTREEBUILDER_API ::std::ostream& operator<<(::std::ostream& s, const ::std::unique_ptr<Octree>& tree);
+OCTREEBUILDER_API ::std::ostream& operator<<(::std::ostream& s, const Octree::OctreeState& octreeState);
+}

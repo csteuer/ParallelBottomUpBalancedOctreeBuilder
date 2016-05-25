@@ -6,68 +6,7 @@
 
 #include <vector_utils.h>
 
-TEST(OctreeUtilsTest, getSearchKeysTest) {
-    const LinearOctree octree(OctantID(0, 4));
-
-    // All search keys of the lower left front node are outside of the domain
-    auto searchKeys = getSearchKeys(OctantID(Vector3i(0), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
-
-    // ... no matter which level
-    searchKeys = getSearchKeys(OctantID(Vector3i(0), 4), LinearOctree(OctantID(0, 5)));
-    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(1, 0, 0), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::ElementsAre(OctantID(Vector3i(2, 0, 0), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(0, 1, 0), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::ElementsAre(OctantID(Vector3i(0, 2, 0), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(0, 0, 1), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::ElementsAre(OctantID(Vector3i(0, 0, 2), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(1, 0, 1), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 0, 1), 0), OctantID(Vector3i(2, 0, 2), 0), OctantID(Vector3i(1, 0, 2), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(1, 1, 0), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 1, 0), 0), OctantID(Vector3i(2, 2, 0), 0), OctantID(Vector3i(1, 2, 0), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(0, 1, 1), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(0, 2, 1), 0), OctantID(Vector3i(0, 2, 2), 0), OctantID(Vector3i(0, 1, 2), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(1, 1, 1), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(2, 1, 1), 0), OctantID(Vector3i(1, 2, 1), 0), OctantID(Vector3i(1, 1, 2), 0),
-                                                            OctantID(Vector3i(2, 2, 1), 0), OctantID(Vector3i(2, 1, 2), 0), OctantID(Vector3i(1, 2, 2), 0),
-                                                            OctantID(Vector3i(2, 2, 2), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(4, 4, 2), 1), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 4, 4), 0), OctantID(Vector3i(4, 3, 4), 0), OctantID(Vector3i(4, 4, 4), 0),
-                                                            OctantID(Vector3i(3, 3, 4), 0), OctantID(Vector3i(3, 4, 3), 0), OctantID(Vector3i(4, 3, 3), 0),
-                                                            OctantID(Vector3i(3, 3, 3), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(4, 4, 4), 1), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 4, 4), 0), OctantID(Vector3i(4, 3, 4), 0), OctantID(Vector3i(4, 4, 3), 0),
-                                                            OctantID(Vector3i(3, 3, 4), 0), OctantID(Vector3i(3, 4, 3), 0), OctantID(Vector3i(4, 3, 3), 0),
-                                                            OctantID(Vector3i(3, 3, 3), 0)));
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(4, 6, 4), 1), octree);
-    ASSERT_THAT(searchKeys, ::testing::UnorderedElementsAre(OctantID(Vector3i(3, 8, 4), 0), OctantID(Vector3i(4, 8, 4), 0), OctantID(Vector3i(4, 8, 3), 0),
-                                                            OctantID(Vector3i(3, 7, 4), 0), OctantID(Vector3i(3, 8, 3), 0), OctantID(Vector3i(4, 7, 3), 0),
-                                                            OctantID(Vector3i(3, 7, 3), 0)));
-
-    // All search keys of the upper right back node are outside of the domain
-    searchKeys = getSearchKeys(OctantID(Vector3i(8, 8, 8), 3), octree);
-    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(12, 12, 12), 2), octree);
-    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(14, 14, 14), 1), octree);
-    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
-
-    searchKeys = getSearchKeys(OctantID(Vector3i(15, 15, 15), 0), octree);
-    ASSERT_THAT(searchKeys, ::testing::IsEmpty());
-}
+using namespace octreebuilder;
 
 TEST(OctreeUtilsTest, propagateRippleInUnbalancedTreeTest) {
     LinearOctree unbalancedOctree(OctantID(0, 4));
@@ -174,7 +113,7 @@ TEST(OctreeUtilsTest, propagateRippleInIncompleteUnbalancedTreeTest) {
     }
 }
 
-TEST(OctreeUtilsTest, completeAndBalanceSubtreeNoLeafsTest) {
+TEST(OctreeUtilsTest, createBalancedSubtreeNoLeafsTest) {
     ASSERT_THAT(createBalancedSubtree(OctantID(Vector3i(0), 0), {}).leafs(), ::testing::ElementsAre(OctantID(Vector3i(0), 0)));
     ASSERT_THAT(createBalancedSubtree(OctantID(Vector3i(0), 4), {}).leafs(), ::testing::ElementsAre(OctantID(Vector3i(0), 4)));
     ASSERT_THAT(createBalancedSubtree(OctantID(Vector3i(2), 1), {}).leafs(), ::testing::ElementsAre(OctantID(Vector3i(2), 1)));
@@ -196,7 +135,7 @@ TEST(OctreeUtilsTest, completeAndBalanceSubtreeAtOriginTest) {
     }
 }
 
-TEST(OctreeUtilsTest, completeAndBalanceSubtreeNotAtOrigin) {
+TEST(OctreeUtilsTest, createBalancedSubtreeNotAtOriginTest) {
     LinearOctree octree = createBalancedSubtree(OctantID(Vector3i(16, 0, 0), 4), {OctantID(Vector3i(16, 0, 0), 0)});
 
     ASSERT_THAT(octree.leafs(), ::testing::SizeIs(29));
@@ -269,8 +208,8 @@ MATCHER_P2(IsValidPartition, levelZeroLeafs, globalTree, std::string(negation ? 
     }
 
     std::vector<OctantID> partitionLeafs;
-    for (const LinearOctree& partition : partition.partitions) {
-        for (const OctantID& leaf : partition.leafs()) {
+    for (const LinearOctree& block : partition.partitions) {
+        for (const OctantID& leaf : block.leafs()) {
             partitionLeafs.push_back(leaf);
         }
     }

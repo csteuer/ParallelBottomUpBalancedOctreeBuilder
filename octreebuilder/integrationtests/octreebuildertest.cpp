@@ -9,6 +9,8 @@
 
 #include <memory>
 
+using namespace octreebuilder;
+
 MATCHER_P4(OctreeNodeHasProperties, llf, level, size, morton,
            std::string(negation ? "hasn't" : "has")
            + " properties { llf: " + ::testing::PrintToString(llf)
@@ -552,4 +554,80 @@ TYPED_TEST(OctreeBuilderTest, maxLevelTest) {
                                                               ::testing::Property(&OctreeNode::getLLF, Vector3i(4, 2, 0))))));
 
     EXPECT_THAT(nodes, ::testing::AllOf(::testing::SizeIs(71), ::testing::Each(::testing::Property(&OctreeNode::getLevel, ::testing::Le(1)))));
+}
+
+TYPED_TEST(OctreeBuilderTest, fromRandomSequence_1_IntegrationTest) {
+
+    const coord_t maxCoord = 300;
+
+    OctreeBuilder& builder = this->createInstance(Vector3i(maxCoord));
+
+    std::default_random_engine generator(3716);
+    std::uniform_int_distribution<coord_t> coordinateDistribution(0, maxCoord);
+    auto genCoord = std::bind(coordinateDistribution, generator);
+
+    for (size_t i = 0; i < 1000; i++) {
+        builder.addLevelZeroLeaf(Vector3i(genCoord(), genCoord(), genCoord()));
+    }
+
+    auto result = builder.finishBuilding();
+
+    ASSERT_EQ(Octree::OctreeState::VALID, result->checkState());
+}
+
+TYPED_TEST(OctreeBuilderTest, fromRandomSequence_2_IntegrationTest) {
+
+    const coord_t maxCoord = 300;
+
+    OctreeBuilder& builder = this->createInstance(Vector3i(maxCoord));
+
+    std::default_random_engine generator(4251);
+    std::uniform_int_distribution<coord_t> coordinateDistribution(0, maxCoord);
+    auto genCoord = std::bind(coordinateDistribution, generator);
+
+    for (size_t i = 0; i < 1000; i++) {
+        builder.addLevelZeroLeaf(Vector3i(genCoord(), genCoord(), genCoord()));
+    }
+
+    auto result = builder.finishBuilding();
+
+    ASSERT_EQ(Octree::OctreeState::VALID, result->checkState());
+}
+
+TYPED_TEST(OctreeBuilderTest, fromRandomSequence_3_IntegrationTest) {
+
+    const coord_t maxCoord = 500;
+
+    OctreeBuilder& builder = this->createInstance(Vector3i(maxCoord));
+
+    std::default_random_engine generator(64467);
+    std::uniform_int_distribution<coord_t> coordinateDistribution(0, maxCoord);
+    auto genCoord = std::bind(coordinateDistribution, generator);
+
+    for (size_t i = 0; i < 2000; i++) {
+        builder.addLevelZeroLeaf(Vector3i(genCoord(), genCoord(), genCoord()));
+    }
+
+    auto result = builder.finishBuilding();
+
+    ASSERT_EQ(Octree::OctreeState::VALID, result->checkState());
+}
+
+TYPED_TEST(OctreeBuilderTest, fromRandomSequence_4_IntegrationTest) {
+
+    const coord_t maxCoord = 2000;
+
+    OctreeBuilder& builder = this->createInstance(Vector3i(maxCoord));
+
+    std::default_random_engine generator(1685);
+    std::uniform_int_distribution<coord_t> coordinateDistribution(0, maxCoord);
+    auto genCoord = std::bind(coordinateDistribution, generator);
+
+    for (size_t i = 0; i < 1000; i++) {
+        builder.addLevelZeroLeaf(Vector3i(genCoord(), genCoord(), genCoord()));
+    }
+
+    auto result = builder.finishBuilding();
+
+    ASSERT_EQ(Octree::OctreeState::VALID, result->checkState());
 }

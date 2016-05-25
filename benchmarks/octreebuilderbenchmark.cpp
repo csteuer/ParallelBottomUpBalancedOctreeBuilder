@@ -13,6 +13,8 @@
 #include <gperftools/profiler.h>
 #endif
 
+using namespace octreebuilder;
+
 constexpr size_t SEED = 12492;
 constexpr size_t NUM_INPUT_LEAFS = 10000;
 constexpr coord_t MAX_COORD = 1000;

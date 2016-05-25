@@ -3,6 +3,7 @@
 #include "box.h"
 #include "octantid.h"
 #include "linearoctree.h"
+#include "mortoncode_utils.h"
 
 #include <assert.h>
 #include <algorithm>
@@ -13,26 +14,7 @@
 #include "logging.h"
 #include <iomanip>
 
-constexpr std::array<Vector3i, 8> searchCornerOffsets{{Vector3i(0, 0, 0), Vector3i(-1, 0, 0), Vector3i(0, -1, 0), Vector3i(-1, -1, 0), Vector3i(0, 0, -1),
-                                                       Vector3i(-1, 0, -1), Vector3i(0, -1, -1), Vector3i(-1, -1, -1)}};
-
-std::vector<OctantID> getSearchKeys(const OctantID& octant, const LinearOctree& octree) {
-    std::vector<OctantID> searchKeys;
-    searchKeys.reserve(7);
-
-    Vector3i searchCorner = getSearchCorner(octant.mcode(), octant.level());
-
-    for (const Vector3i& coord : searchCornerOffsets) {
-        Vector3i searchKeyLLF = searchCorner + coord;
-        OctantID searchKey(searchKeyLLF, 0);
-
-        if (searchKey != octant && octree.insideTreeBounds(searchKey) && !searchKey.isDecendantOf(octant)) {
-            searchKeys.push_back(searchKey);
-        }
-    }
-
-    return searchKeys;
-}
+namespace octreebuilder {
 
 LinearOctree balanceTree(const LinearOctree& octree) {
     LinearOctree result = octree;
@@ -44,7 +26,7 @@ LinearOctree balanceTree(const LinearOctree& octree) {
 
     const uint numLevelsToCheck = octree.depth() - 2;
 
-    std::vector<std::vector<OctantID>> octantsPerLevel(numLevelsToCheck, std::vector<OctantID>());
+    ::std::vector<::std::vector<OctantID>> octantsPerLevel(numLevelsToCheck, ::std::vector<OctantID>());
     for (const OctantID& octant : octree.leafs()) {
         if (octant.level() >= numLevelsToCheck) {
             continue;
@@ -56,12 +38,12 @@ LinearOctree balanceTree(const LinearOctree& octree) {
     // The maximum level is octree.depth() - 1. Consequently nodes with level octree.depth() - 3 are the last ones that can have a
     // higher level neighbour with a level difference of more than 1.
     for (uint currentLevel = 0; currentLevel < numLevelsToCheck; currentLevel++) {
-        std::unordered_map<OctantID, std::unordered_set<OctantID>> unbalanced_nodes;
+        ::std::unordered_map<OctantID, ::std::unordered_set<OctantID>> unbalanced_nodes;
 
         for (const OctantID& octant : octantsPerLevel.at(currentLevel)) {
             assert(octant.level() == currentLevel);
 
-            std::vector<OctantID> searchKeys = getSearchKeys(octant, octree);
+            ::std::vector<OctantID> searchKeys = octant.getSearchKeys(octree);
             for (const OctantID& searchKey : searchKeys) {
                 OctantID unbalancedNode;
 
@@ -79,7 +61,7 @@ LinearOctree balanceTree(const LinearOctree& octree) {
                 if (it != unbalanced_nodes.end()) {
                     it->second.insert(searchKey);
                 } else {
-                    unbalanced_nodes.insert(std::make_pair(unbalancedNode, std::unordered_set<OctantID>{searchKey}));
+                    unbalanced_nodes.insert(::std::make_pair(unbalancedNode, ::std::unordered_set<OctantID>{searchKey}));
                 }
             }
         }
@@ -88,7 +70,7 @@ LinearOctree balanceTree(const LinearOctree& octree) {
             continue;
         }
 
-        for (const std::pair<OctantID, std::unordered_set<OctantID>>& unbalancedNode : unbalanced_nodes) {
+        for (const ::std::pair<OctantID, ::std::unordered_set<OctantID>>& unbalancedNode : unbalanced_nodes) {
             const auto subtree = completeSubtree(unbalancedNode.first, currentLevel + 1, unbalancedNode.second);
 
             result.replaceWithSubtree(unbalancedNode.first, subtree);
@@ -106,7 +88,7 @@ LinearOctree balanceTree(const LinearOctree& octree) {
     return result;
 }
 
-LinearOctree createBalancedSubtree(const OctantID& root, const std::vector<OctantID>& levelZeroLeafs, uint maxLevel) {
+LinearOctree createBalancedSubtree(const OctantID& root, const ::std::vector<OctantID>& levelZeroLeafs, uint maxLevel) {
     LinearOctree tree(root);
 
     tree.insert(levelZeroLeafs.begin(), levelZeroLeafs.end());
@@ -122,7 +104,7 @@ void createBalancedSubtree(LinearOctree& tree, uint maxLevel) {
         return;
     }
 
-    std::unordered_set<OctantID> nonEmptyNodes;
+    ::std::unordered_set<OctantID> nonEmptyNodes;
     nonEmptyNodes.reserve(tree.leafs().size());
 
     for (const OctantID& leaf : tree.leafs()) {
@@ -131,14 +113,14 @@ void createBalancedSubtree(LinearOctree& tree, uint maxLevel) {
     }
 
     uint currentLevel = 0;
-    maxLevel = std::min(maxLevel, tree.depth());
+    maxLevel = ::std::min(maxLevel, tree.depth());
 
     for (; currentLevel < maxLevel; currentLevel++) {
-        std::unordered_set<OctantID> nonEmptyParentNodes;
+        ::std::unordered_set<OctantID> nonEmptyParentNodes;
 
         // The list of nodes that ensure a level difference of 1 between all nodes that have a common vertex.
         // Either these nodes (which are of the next level) or their child nodes must exist in the tree.
-        std::unordered_set<OctantID> guardParentNodes;
+        ::std::unordered_set<OctantID> guardParentNodes;
 
         // add the siblings of all non empty nodes
         for (const OctantID& current_node : nonEmptyNodes) {
@@ -203,19 +185,19 @@ void createBalancedSubtree(LinearOctree& tree, uint maxLevel) {
     tree.sortAndRemove();
 }
 
-Partition::Partition(const OctantID& rootOctant, const std::vector<LinearOctree>& partitionList) : root(rootOctant), partitions(partitionList) {
+Partition::Partition(const OctantID& rootOctant, const ::std::vector<LinearOctree>& partitionList) : root(rootOctant), partitions(partitionList) {
 }
 
-Partition computePartition(const OctantID& globalRoot, const std::vector<OctantID>& levelZeroLeafs, const int numThreads) {
+Partition computePartition(const OctantID& globalRoot, const ::std::vector<OctantID>& levelZeroLeafs, const int numThreads) {
     if (levelZeroLeafs.empty()) {
-        throw std::runtime_error("computePartition: Invalid parameter. No level zero leaves.");
+        throw ::std::runtime_error("computePartition: Invalid parameter. No level zero leaves.");
     }
 
     assert(levelZeroLeafs.front() <= levelZeroLeafs.back());  // levelZeroLeafs must be sorted
 
     const size_t leafsPerProcessor = levelZeroLeafs.size() / numThreads;
 
-    std::vector<std::vector<OctantID>> completedRegions;
+    ::std::vector<::std::vector<OctantID>> completedRegions;
 
     if (leafsPerProcessor > 2) {
         completedRegions.reserve(numThreads);
@@ -224,7 +206,7 @@ Partition computePartition(const OctantID& globalRoot, const std::vector<OctantI
             size_t start = t * leafsPerProcessor;
             size_t end = (t < numThreads - 1 ? (t + 1) * leafsPerProcessor : levelZeroLeafs.size()) - 1;
 
-            std::vector<OctantID> region = completeRegion(levelZeroLeafs.at(start), levelZeroLeafs.at(end));
+            ::std::vector<OctantID> region = completeRegion(levelZeroLeafs.at(start), levelZeroLeafs.at(end));
 
             if (!region.empty()) {
                 completedRegions.push_back(region);
@@ -235,11 +217,11 @@ Partition computePartition(const OctantID& globalRoot, const std::vector<OctantI
     LinearOctree blocks = computeBlocksFromRegions(globalRoot, completedRegions);
 
     if (blocks.leafs().empty()) {
-        std::vector<LinearOctree> partitions = {LinearOctree(globalRoot, levelZeroLeafs)};
+        ::std::vector<LinearOctree> partitions = {LinearOctree(globalRoot, levelZeroLeafs)};
         return Partition(globalRoot, partitions);
     }
 
-    std::vector<LinearOctree> partitions;
+    ::std::vector<LinearOctree> partitions;
     partitions.reserve(blocks.leafs().size());
 
     for (const OctantID& block : blocks.leafs()) {
@@ -255,7 +237,7 @@ Partition computePartition(const OctantID& globalRoot, const std::vector<OctantI
 
         if (partiotionsIterator == partitions.end()) {
             // Either a bug or levelZeroLeafs are not sorted
-            throw std::runtime_error("computePartition: Invalid state. No block for level zero leaf found.");
+            throw ::std::runtime_error("computePartition: Invalid state. No block for level zero leaf found.");
         }
 
         partiotionsIterator->insert(levelZeroLeaf);
@@ -265,9 +247,9 @@ Partition computePartition(const OctantID& globalRoot, const std::vector<OctantI
     return Partition(blocks.root(), partitions);
 }
 
-std::vector<OctantID> completeRegion(const OctantID& start, const OctantID& end) {
+::std::vector<OctantID> completeRegion(const OctantID& start, const OctantID& end) {
     if (start > end) {
-        throw std::runtime_error("completeRegion: Invalid parameters. Start must be less or equal than end. ");
+        throw ::std::runtime_error("completeRegion: Invalid parameters. Start must be less or equal than end. ");
     } else if (start == end) {
         return {};
     }
@@ -275,10 +257,10 @@ std::vector<OctantID> completeRegion(const OctantID& start, const OctantID& end)
     OctantID root = nearestCommonAncestor(start, end);
     LinearOctree result(root);
 
-    std::vector<OctantID> possibleLeafs = root.children();
+    ::std::vector<OctantID> possibleLeafs = root.children();
 
     while (!possibleLeafs.empty()) {
-        std::vector<OctantID> new_possibleLeafs;
+        ::std::vector<OctantID> new_possibleLeafs;
         new_possibleLeafs.reserve(8 * possibleLeafs.size());
 
         for (const OctantID& leaf : possibleLeafs) {
@@ -294,10 +276,10 @@ std::vector<OctantID> completeRegion(const OctantID& start, const OctantID& end)
     }
 
     result.sortAndRemove();
-    return std::vector<OctantID>(result.leafs().begin(), result.leafs().end());
+    return ::std::vector<OctantID>(result.leafs().begin(), result.leafs().end());
 }
 
-LinearOctree computeBlocksFromRegions(const OctantID& globalRoot, std::vector<std::vector<OctantID>> completedRegions) {
+LinearOctree computeBlocksFromRegions(const OctantID& globalRoot, ::std::vector<::std::vector<OctantID>> completedRegions) {
     LinearOctree result(globalRoot);
 
     if (completedRegions.empty()) {
@@ -308,16 +290,16 @@ LinearOctree computeBlocksFromRegions(const OctantID& globalRoot, std::vector<st
 
     // Only retain the highest level octants of each region
     for (size_t i = 0; i < completedRegions.size(); i++) {
-        const std::vector<OctantID> currentRegion = completedRegions.at(i);
+        const ::std::vector<OctantID> currentRegion = completedRegions.at(i);
 
         // Find the maximum level of all octants in the region (at least 1)
         uint maxLevel = 1;
         for (const OctantID& octant : currentRegion) {
-            maxLevel = std::max(octant.level(), maxLevel);
+            maxLevel = ::std::max(octant.level(), maxLevel);
         }
 
         // Remove all octants that are not of the maximum level
-        std::vector<OctantID> filteredRegion;
+        ::std::vector<OctantID> filteredRegion;
         filteredRegion.reserve(currentRegion.size());
 
         for (const OctantID& octant : currentRegion) {
@@ -329,12 +311,12 @@ LinearOctree computeBlocksFromRegions(const OctantID& globalRoot, std::vector<st
         completedRegions.at(i) = filteredRegion;
     }
 
-    completedRegions.erase(std::remove_if(completedRegions.begin(), completedRegions.end(), [](const std::vector<OctantID>& completedRegion) {
+    completedRegions.erase(::std::remove_if(completedRegions.begin(), completedRegions.end(), [](const ::std::vector<OctantID>& completedRegion) {
         return completedRegion.empty();
     }), completedRegions.end());
 
     for (size_t i = 0; i < completedRegions.size(); i++) {
-        std::vector<OctantID>& blocks = completedRegions.at(i);
+        ::std::vector<OctantID>& blocks = completedRegions.at(i);
 
         if (i == 0) {
             OctantID first = nearestCommonAncestor(result.deepestFirstDecendant(), blocks.front());
@@ -353,7 +335,7 @@ LinearOctree computeBlocksFromRegions(const OctantID& globalRoot, std::vector<st
         }
 
         for (size_t y = 0; y < blocks.size() - 1; y++) {
-            std::vector<OctantID> completedBlockRange = completeRegion(blocks.at(y), blocks.at(y + 1));
+            ::std::vector<OctantID> completedBlockRange = completeRegion(blocks.at(y), blocks.at(y + 1));
             result.insert(blocks.at(y));
             result.insert(completedBlockRange.begin(), completedBlockRange.end());
         }
@@ -371,17 +353,17 @@ OctantID nearestCommonAncestor(const OctantID& a, const OctantID& b) {
     return OctantID(resultPair.first, resultPair.second);
 }
 
-std::vector<OctantID> completeSubtree(const OctantID& root, uint lowestLevel, const std::unordered_set<OctantID>& keys) {
+::std::vector<OctantID> completeSubtree(const OctantID& root, uint lowestLevel, const ::std::unordered_set<OctantID>& keys) {
     if (root.level() == lowestLevel || keys.empty()) {
-        throw std::runtime_error("completeSubtree: Invalid parameter(s). Empty subtree if lowest level is equal to root level or no keys.");
+        throw ::std::runtime_error("completeSubtree: Invalid parameter(s). Empty subtree if lowest level is equal to root level or no keys.");
     }
 
     if (root.level() == lowestLevel + 1) {
         return root.children();
     }
 
-    std::vector<OctantID> result;
-    std::unordered_set<OctantID> currentLevelLeafs;
+    ::std::vector<OctantID> result;
+    ::std::unordered_set<OctantID> currentLevelLeafs;
 
     for (const OctantID& key : keys) {
         assert(key.level() == 0);
@@ -393,7 +375,7 @@ std::vector<OctantID> completeSubtree(const OctantID& root, uint lowestLevel, co
     }
 
     for (uint l = lowestLevel; l < root.level(); l++) {
-        std::unordered_set<OctantID> currentLevelParents;
+        ::std::unordered_set<OctantID> currentLevelParents;
 
         for (const OctantID& leaf : currentLevelLeafs) {
             OctantID parent = leaf.parent();
@@ -416,8 +398,8 @@ std::vector<OctantID> completeSubtree(const OctantID& root, uint lowestLevel, co
     return result;
 }
 
-static void collectBoundaryLeafs(const LinearOctree& partition, const Vector3i& globalTreeLLF, const Vector3i& globalTreeURB, std::vector<OctantID>& outBoundaryOctants) {
-
+static void collectBoundaryLeafs(const LinearOctree& partition, const Vector3i& globalTreeLLF, const Vector3i& globalTreeURB,
+                                 ::std::vector<OctantID>& outBoundaryOctants) {
     const coord_t partitionSize = getOctantSizeForLevel(partition.depth());
     const Vector3i partitionLLF = partition.root().coord();
     const Vector3i partitionURB = partitionLLF + Vector3i(partitionSize);
@@ -429,13 +411,13 @@ static void collectBoundaryLeafs(const LinearOctree& partition, const Vector3i& 
     }
 }
 
-static std::vector<OctantID> flattenPartitions(const std::vector<LinearOctree>& partitions) {
+static ::std::vector<OctantID> flattenPartitions(const ::std::vector<LinearOctree>& partitions) {
     size_t numLeafs = 0;
     for (const LinearOctree& partition : partitions) {
         numLeafs += partition.leafs().size();
     }
 
-    std::vector<OctantID> allLeafs;
+    ::std::vector<OctantID> allLeafs;
     allLeafs.reserve(numLeafs);
     for (const LinearOctree& partition : partitions) {
         allLeafs.insert(allLeafs.end(), partition.leafs().begin(), partition.leafs().end());
@@ -443,7 +425,7 @@ static std::vector<OctantID> flattenPartitions(const std::vector<LinearOctree>& 
     return allLeafs;
 }
 
-static LinearOctree mergePartitionsAndBalancedBoundaryTree(const std::vector<OctantID>& flatUnbalancedTree, const LinearOctree& balancedBoundaryTree) {
+static LinearOctree mergePartitionsAndBalancedBoundaryTree(const ::std::vector<OctantID>& flatUnbalancedTree, const LinearOctree& balancedBoundaryTree) {
     if (balancedBoundaryTree.leafs().empty()) {
         return LinearOctree(balancedBoundaryTree.root(), flatUnbalancedTree);
     }
@@ -490,24 +472,23 @@ LinearOctree mergeUnbalancedCompleteTreeWithBalancedIncompleteTree(const LinearO
     return mergePartitionsAndBalancedBoundaryTree(unbalancedTree.leafs(), balancedTree);
 }
 
-static void parallelCreateBalancedSubtrees(std::vector<LinearOctree>& partitions, const uint maxLevel) {
+static void parallelCreateBalancedSubtrees(::std::vector<LinearOctree>& partitions, const uint maxLevel) {
 #pragma omp parallel for schedule(dynamic, 1)
     for (size_t i = 0; i < partitions.size(); i++) {
         createBalancedSubtree(partitions.at(i), maxLevel);
     }
 }
 
-static std::vector<std::vector<OctantID>> parallelCollectBoundaryLeafs(const Partition& partition) {
-
+static ::std::vector<::std::vector<OctantID>> parallelCollectBoundaryLeafs(const Partition& partition) {
     const coord_t globalTreeSize = getOctantSizeForLevel(partition.root.level());
     const Vector3i globalTreeLLF = partition.root.coord();
     const Vector3i globalTreeURB = globalTreeLLF + Vector3i(globalTreeSize);
 
-    std::vector<std::vector<OctantID>> boundaryOctantsPerPartition(partition.partitions.size());
+    ::std::vector<::std::vector<OctantID>> boundaryOctantsPerPartition(partition.partitions.size());
 #pragma omp parallel for schedule(dynamic, 1)
     for (size_t i = 0; i < partition.partitions.size(); i++) {
         const LinearOctree& currentPartition = partition.partitions.at(i);
-        std::vector<OctantID>& boundaryOctants = boundaryOctantsPerPartition.at(i);
+        ::std::vector<OctantID>& boundaryOctants = boundaryOctantsPerPartition.at(i);
 
         collectBoundaryLeafs(currentPartition, globalTreeLLF, globalTreeURB, boundaryOctants);
     }
@@ -515,53 +496,53 @@ static std::vector<std::vector<OctantID>> parallelCollectBoundaryLeafs(const Par
     return boundaryOctantsPerPartition;
 }
 
-static LinearOctree createBoundaryOctantsTree(const std::vector<std::vector<OctantID>>& boundaryOctantsPerPartition, const OctantID& globalTreeRoot) {
-
+static LinearOctree createBoundaryOctantsTree(const ::std::vector<::std::vector<OctantID>>& boundaryOctantsPerPartition, const OctantID& globalTreeRoot) {
     size_t numBoundaryOctants = 0;
-    for (const std::vector<OctantID>& boundaryOctants : boundaryOctantsPerPartition) {
+    for (const ::std::vector<OctantID>& boundaryOctants : boundaryOctantsPerPartition) {
         numBoundaryOctants += boundaryOctants.size();
     }
 
     LinearOctree boundaryOctantsTree(globalTreeRoot, numBoundaryOctants);
 
-    for (const std::vector<OctantID>& boundaryOctants : boundaryOctantsPerPartition) {
+    for (const ::std::vector<OctantID>& boundaryOctants : boundaryOctantsPerPartition) {
         boundaryOctantsTree.insert(boundaryOctants.begin(), boundaryOctants.end());
     }
 
     return boundaryOctantsTree;
 }
 
-LinearOctree createBalancedOctreeParallel(const OctantID& root, const std::vector<OctantID>& levelZeroLeafs, const int numThreads, const uint maxLevel) {
+LinearOctree createBalancedOctreeParallel(const OctantID& root, const ::std::vector<OctantID>& levelZeroLeafs, const int numThreads, const uint maxLevel) {
     PerfCounter perfCounter;
 
     perfCounter.start();
     Partition computedPartition = computePartition(root, levelZeroLeafs, numThreads);
 
-    LOG_PROF(std::left << std::setw(30) << "Created partition: " << perfCounter);
+    LOG_PROF(::std::left << ::std::setw(30) << "Created partition: " << perfCounter);
 
     perfCounter.start();
     parallelCreateBalancedSubtrees(computedPartition.partitions, maxLevel);
-    LOG_PROF(std::left << std::setw(30) << "Created balanced subtrees: " << perfCounter);
+    LOG_PROF(::std::left << ::std::setw(30) << "Created balanced subtrees: " << perfCounter);
 
     perfCounter.start();
-    std::vector<std::vector<OctantID>> boundaryOctantsPerPartition = parallelCollectBoundaryLeafs(computedPartition);
-    LOG_PROF(std::left << std::setw(30) << "Collected boundary leafs: " << perfCounter);
+    ::std::vector<::std::vector<OctantID>> boundaryOctantsPerPartition = parallelCollectBoundaryLeafs(computedPartition);
+    LOG_PROF(::std::left << ::std::setw(30) << "Collected boundary leafs: " << perfCounter);
 
     perfCounter.start();
     LinearOctree boundaryOctantsTree = createBoundaryOctantsTree(boundaryOctantsPerPartition, computedPartition.root);
-    LOG_PROF(std::left << std::setw(30) << "Created boundary tree: " << perfCounter);
+    LOG_PROF(::std::left << ::std::setw(30) << "Created boundary tree: " << perfCounter);
 
     perfCounter.start();
     LinearOctree balancedBoundaryTree = balanceTree(boundaryOctantsTree);
-    LOG_PROF(std::left << std::setw(30) << "Balanced boundary tree: " << perfCounter);
+    LOG_PROF(::std::left << ::std::setw(30) << "Balanced boundary tree: " << perfCounter);
 
     perfCounter.start();
-    std::vector<OctantID> leafsOfAllPartitions = flattenPartitions(computedPartition.partitions);
-    LOG_PROF(std::left << std::setw(30) << "Flatten boundary tree: " << perfCounter);
+    ::std::vector<OctantID> leafsOfAllPartitions = flattenPartitions(computedPartition.partitions);
+    LOG_PROF(::std::left << ::std::setw(30) << "Flatten boundary tree: " << perfCounter);
 
     perfCounter.start();
     LinearOctree result = mergePartitionsAndBalancedBoundaryTree(leafsOfAllPartitions, balancedBoundaryTree);
-    LOG_PROF(std::left << std::setw(30) << "Merged boundary tree: " << perfCounter);
+    LOG_PROF(::std::left << ::std::setw(30) << "Merged boundary tree: " << perfCounter);
 
     return result;
+}
 }

@@ -2,6 +2,8 @@
 
 #include "box.h"
 
+namespace octreebuilder {
+
 VectorSpace::VectorSpace(const Vector3i& start, const Vector3i& end) {
     init(start, end);
 }
@@ -23,12 +25,12 @@ void VectorSpace::init(const Vector3i& start, const Vector3i& end) {
     }
 }
 
-VectorSpace::VoxelRangeIter VectorSpace::begin() const {
-    return VoxelRangeIter(m_start, m_end);
+VectorSpace::VectorRangeIter VectorSpace::begin() const {
+    return VectorRangeIter(m_start, m_end);
 }
 
-VectorSpace::VoxelRangeIter VectorSpace::end() const {
-    return VoxelRangeIter(m_end, m_end);
+VectorSpace::VectorRangeIter VectorSpace::end() const {
+    return VectorRangeIter(m_end, m_end);
 }
 
 coord_t VectorSpace::size() const {
@@ -39,22 +41,22 @@ bool VectorSpace::empty() const {
     return m_start == m_end;
 }
 
-VectorSpace::VoxelRangeIter::VoxelRangeIter(const Vector3i& start, const Vector3i& end) : m_current(start), m_start(start), m_end(end) {
+VectorSpace::VectorRangeIter::VectorRangeIter(const Vector3i& start, const Vector3i& end) : m_current(start), m_start(start), m_end(end) {
 }
 
-bool VectorSpace::VoxelRangeIter::operator!=(const VectorSpace::VoxelRangeIter& other) const {
+bool VectorSpace::VectorRangeIter::operator!=(const VectorSpace::VectorRangeIter& other) const {
     return m_current != other.m_current;
 }
 
-bool VectorSpace::VoxelRangeIter::operator==(const VectorSpace::VoxelRangeIter& other) const {
+bool VectorSpace::VectorRangeIter::operator==(const VectorSpace::VectorRangeIter& other) const {
     return m_current == other.m_current;
 }
 
-const VectorSpace::value_type& VectorSpace::VoxelRangeIter::operator*() const {
+const VectorSpace::value_type& VectorSpace::VectorRangeIter::operator*() const {
     return m_current;
 }
 
-const VectorSpace::VoxelRangeIter& VectorSpace::VoxelRangeIter::operator++() {
+const VectorSpace::VectorRangeIter& VectorSpace::VectorRangeIter::operator++() {
     m_current.setX(m_current.x() + 1);
 
     if (m_current.x() >= m_end.x()) {
@@ -89,4 +91,5 @@ VectorSpace ClosedVectorSpace(const Box& box) {
 
 VectorSpace ClosedVectorSpace(const Vector3i& end) {
     return VectorSpace(end + Vector3i(1));
+}
 }

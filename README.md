@@ -1,12 +1,25 @@
-# ParallelBottomUpOctreeBuilder
+# ParallelBottomUpBalancedOctreeBuilder
 
-What it does.
-Implements a modified version of the <Name> algorithm described in [Reference](JournalLink).
+A library for the creation of 2:1 balanced octrees.
+Implements a parallel and a serial bottom-up algorithm.
+The parallel algorithm is a modified version of
+[Bottom-up construction and 2: 1 balance refinement of linear octrees in parallel](http://epubs.siam.org/doi/abs/10.1137/070681727) by Sundar et al.
+
+Its optimized for shared memory systems instead of distributed memory systems and uses
+OpenMP and Arch D. Robisons [parallel stable sort algorithm for OpenMP](https://software.intel.com/en-us/articles/a-parallel-stable-sort-using-c11-for-tbb-cilk-plus-and-openmp).
 
 ## Dependencies
 
-Requires gcc 4.7+ or clang 3.1+, cmake 2.8.12+, [googletest](https://github.com/google/googletest) for building the tests (optional),
-[hayai](https://github.com/nickbruun/hayai) for building the benchmarks (optional) and doxygen for generating the documentatíon (also optional).
+Requires:
+ * [gcc](https://gcc.gnu.org/) 4.7+ or [clang](http://clang.llvm.org/) 3.6+
+ * [cmake](https://cmake.org/) 2.8.12+
+
+Optional:
+ * [tcmalloc](http://goog-perftools.sourceforge.net/doc/tcmalloc.html) (for better performance)
+ * [googletest](https://github.com/google/googletest) master (for building the tests)
+ * [hayai](https://github.com/nickbruun/hayai) v1.0.1 (for building the benchmarks)
+ * [gperftools](https://github.com/gperftools/gperftools) (for profiling)
+ * [doxygen](www.doxygen.org/) (for generating the documentatíon).
 
 ## How to build
 
@@ -25,34 +38,76 @@ Run `make doc` to generate the documentation (doxygen must be installed and and 
 
 ### Build and run the tests
 
-Clone [googletest (master)](https://github.com/google/googletest) into `<project-root>/googletest` and set the cmake variable `BUILD_TESTS=ON`:
+Clone [googletest](https://github.com/google/googletest) into `<project-root>/googletest` and set the cmake variable `BUILD_TESTS=ON`:
 
-~~~~~~~~~~~~~{.txt}
+~~~~~~~~~~~~~{.sh}
 git clone https://github.com/google/googletest.git
 cd build
 cmake .. -DBUILD_TESTS=ON
-./octreebuilder/tests/octreebuilder-tests
+./octreebuilder/tests/octreebuilder-unittests
+./octreebuilder/tests/octreebuilder-integrationtests
 ~~~~~~~~~~~~~
 
 ### Build and run the benchmarks
 
 Install [hayai](https://github.com/nickbruun/hayai), set the cmake variable `BUILD_BENCHMARKS=ON` then run the benchmark executable.
 
+### Profile the code
+
+Install [gperftools](https://github.com/gperftools/gperftools) (e.g. on ubuntu systems run `sudo apt-get install libgoogle-perftools-dev`),
+set the cmake variable `ENABLE_PROFILING=ON` and build in release mode with debug information.
+Run the benchmark executable (should create `OctreeBuilderBenchmark.prof`), create a callgrind file with pprof and analyze the results with [kcachegrind](http://kcachegrind.sourceforge.net/html/Home.html):
+~~~~~~~~~~~~~{.sh}
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DBUILD_BENCHMARKS=ON -DENABLE_PROFILING=ON
+cd benchmarks
+./benchmarks
+google-pprof benchmarks OctreeBuilderBenchmark.prof --callgrind > bench.callgrind
+kcachegrind bench.callgrind
+~~~~~~~~~~~~~
+
 ## How to use
 
 ~~~~~~~~~~~~~{.cpp}
 
+#include <iostream>
+#include <memory>
+#include <random>
+#include <omp.h>
+
+#include <octreebuilder/paralleloctreebuilder.h>
+#include <octreebuilder/sequentialoctreebuilder.h>
+#include <octreebuilder/octree.h>
+
+using namespace octreebuilder;
+
 int main(int, char**) {
+    const Vector3i maxCoord(1000, 1000, 1000);
 
-    // To be written
+    std::unique_ptr<OctreeBuilder> octreeBuilder;
 
-    return 0;
+    if (omp_get_max_threads() > 1) {
+        octreeBuilder = std::unique_ptr<OctreeBuilder>(new ParallelOctreeBuilder(maxCoord));
+    } else {
+        octreeBuilder = std::unique_ptr<OctreeBuilder>(new SequentialOctreeBuilder(maxCoord));
+    }
 
+    std::default_random_engine generator;
+    std::uniform_int_distribution<coord_t> coordinateDistribution(0, 1000);
+    auto genCoord = std::bind(coordinateDistribution, generator);
+
+    for (size_t i = 0; i < 5000; i++) {
+        octreeBuilder->addLevelZeroLeaf(Vector3i(genCoord(), genCoord(), genCoord()));
+    }
+
+    std::unique_ptr<Octree> octree = octreeBuilder->finishBuilding();
+
+    std::cout << "Octree: " << octree << std::endl;
 }
 
 ~~~~~~~~~~~~~
 
 Output:
 ~~~~~~~~~~~~~{.txt}
-
+Octree: { depth: 10, maxLevel: 5, maxXYZ: (1023, 1023, 1023), numNodes: 1693581 }
 ~~~~~~~~~~~~~

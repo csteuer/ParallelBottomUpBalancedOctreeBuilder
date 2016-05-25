@@ -1,10 +1,12 @@
-#include "mortoncode.h"
+#include "mortoncode_utils.h"
 
 #include "box.h"
 
 #include <stdexcept>
 #include <limits>
 #include <assert.h>
+
+namespace octreebuilder {
 
 /**
  * @brief returns the number of the most significant bit that is set
@@ -17,7 +19,6 @@
  *  getMostSignigicantSetBitPos(8) <=> getMostSignigicantSetBitPos(...1000) => 3
  */
 static int getMostSignigicantSetBitPos(morton_t number) {
-
     if (number == 0) {
         return -1;
     }
@@ -33,7 +34,7 @@ static int getMostSignigicantSetBitPos(morton_t number) {
 
 static int getMostSignigicantSetBitPos(coord_t number) {
     if (number < 0) {
-        throw std::runtime_error("Invalid input.");
+        throw ::std::runtime_error("Invalid input.");
     }
 
     return getMostSignigicantSetBitPos(static_cast<morton_t>(number));
@@ -52,7 +53,7 @@ static int getMostSignigicantSetBitPos(coord_t number) {
  */
 static int getLeastSignigicantSetBitPos(coord_t number) {
     if (number < 0) {
-        throw std::runtime_error("Invalid input.");
+        throw ::std::runtime_error("Invalid input.");
     }
 
     if (number == 0) {
@@ -71,17 +72,17 @@ static int getLeastSignigicantSetBitPos(coord_t number) {
 constexpr size_t maxBitsPerComponent = 21;  // (sizeof(morton_t) * 8) / 3;
 
 bool fitsInMortonCode(const Vector3i& maxXYZ) {
-    coord_t max = std::max(maxXYZ.x(), std::max(maxXYZ.y(), maxXYZ.z()));
+    coord_t max = ::std::max(maxXYZ.x(), ::std::max(maxXYZ.y(), maxXYZ.z()));
 
     // when shifting all allowed bits out the result must be 0
     return (max >> maxBitsPerComponent) == 0;
 }
 
 uint getOctreeDepthForBounding(const Vector3i& maxXYZ) {
-    coord_t max = std::max(maxXYZ.x(), std::max(maxXYZ.y(), maxXYZ.z()));
+    coord_t max = ::std::max(maxXYZ.x(), ::std::max(maxXYZ.y(), maxXYZ.z()));
 
     if (max < 0) {
-        throw std::runtime_error("Invalid bounding (all components must not be negative)");
+        throw ::std::runtime_error("Invalid bounding (all components must not be negative)");
     }
 
     // how many bits are required to store numbers from 0 to max
@@ -146,7 +147,7 @@ static morton_t removeSpaceBetweenBits(morton_t spaced) {
         result |= (spaced >> (i * 2)) & (1 << i);
     }
 
-    assert(result <= std::numeric_limits<coord_t>::max());
+    assert(result <= ::std::numeric_limits<coord_t>::max());
 
     return result;
 }
@@ -168,7 +169,7 @@ morton_t getMortonCodeForParent(const morton_t& current_code, const uint& curren
 
 morton_t getMortonCodeForAncestor(const morton_t& current_code, const uint& currentLevel, const uint& ancestorLevel) {
     if (ancestorLevel < currentLevel) {
-        throw std::runtime_error("getMortonCodeForAncestor: Invalid parameter. Current level is greater than ancesor level.");
+        throw ::std::runtime_error("getMortonCodeForAncestor: Invalid parameter. Current level is greater than ancesor level.");
     }
 
     if (ancestorLevel == currentLevel) {
@@ -180,9 +181,9 @@ morton_t getMortonCodeForAncestor(const morton_t& current_code, const uint& curr
     return parentLevelCode;
 }
 
-std::array<morton_t, 8> getMortonCodesForChildren(const morton_t& parent, const uint& parentLevel) {
+::std::array<morton_t, 8> getMortonCodesForChildren(const morton_t& parent, const uint& parentLevel) {
     if (parentLevel == 0) {
-        throw std::runtime_error("Leaf octants can't have children.");
+        throw ::std::runtime_error("Leaf octants can't have children.");
     }
 
     uint childLevel = parentLevel - 1;
@@ -192,7 +193,7 @@ std::array<morton_t, 8> getMortonCodesForChildren(const morton_t& parent, const 
     // llf of a child and use getMortonCodeForParentLevel to obtain the "normalized" parent_llf
     morton_t parent_llf = getMortonCodeForParent(parent, childLevel);
 
-    std::array<morton_t, 8> children;
+    ::std::array<morton_t, 8> children;
 
     // The children llf's are defined by the bit-triplet at position 'childLevel' e.g. '<parent-bits> 000 ... 000'
     // if the lower left front child while '<parent-bits> 001 ... 000' is the upper left front child and so on
@@ -207,10 +208,10 @@ std::array<morton_t, 8> getMortonCodesForChildren(const morton_t& parent, const 
     return children;
 }
 
-std::vector<morton_t> getMortonCodesForNeighbourOctants(const morton_t& current_octant, const uint& currentLevel, const uint& octreeDepth,
-                                                      const Vector3i& root) {
+::std::vector<morton_t> getMortonCodesForNeighbourOctants(const morton_t& current_octant, const uint& currentLevel, const uint& octreeDepth,
+                                                        const Vector3i& root) {
     if (currentLevel > octreeDepth) {
-        throw std::runtime_error("No level must be greater than the octreeDepth.");
+        throw ::std::runtime_error("No level must be greater than the octreeDepth.");
     }
 
     Box octreeBounds = Box(root, root + getMaxXYZForOctreeDepth(octreeDepth));
@@ -222,15 +223,15 @@ std::vector<morton_t> getMortonCodesForNeighbourOctants(const morton_t& current_
     Vector3i currentOctant_llf = getCoordinateForMortonCode(currentOctantMaskedCode);
 
     if (!octreeBounds.contains(currentOctant_llf)) {
-        throw std::runtime_error("Octant not in octree.");
+        throw ::std::runtime_error("Octant not in octree.");
     }
 
     coord_t octantSize = getOctantSizeForLevel(currentLevel);
 
-    std::vector<morton_t> neighbours;
+    ::std::vector<morton_t> neighbours;
     neighbours.reserve(26);
 
-    const std::array<coord_t, 3> offsetRange = {{-octantSize, 0, octantSize}};
+    const ::std::array<coord_t, 3> offsetRange = {{-octantSize, 0, octantSize}};
 
     for (coord_t offset_x : offsetRange) {
         for (coord_t offset_y : offsetRange) {
@@ -264,11 +265,11 @@ uint getMaxLevelOfLLF(const Vector3i& llf, const uint& octreeDepth) {
         return octreeDepth;
     }
 
-    uint level = std::min(static_cast<uint>(getLeastSignigicantSetBitPos(llf.x())),
-                          std::min(static_cast<uint>(getLeastSignigicantSetBitPos(llf.y())), static_cast<uint>(getLeastSignigicantSetBitPos(llf.z()))));
+    uint level = ::std::min(static_cast<uint>(getLeastSignigicantSetBitPos(llf.x())),
+                          ::std::min(static_cast<uint>(getLeastSignigicantSetBitPos(llf.y())), static_cast<uint>(getLeastSignigicantSetBitPos(llf.z()))));
 
     if (level > octreeDepth) {
-        throw std::runtime_error("Given llf out of bounds for an octree with the specified depth.");
+        throw ::std::runtime_error("Given llf out of bounds for an octree with the specified depth.");
     }
 
     return level;
@@ -337,18 +338,19 @@ constexpr uint bitPosToLevelLookupTable[64] = {
 #undef S1
 };
 
-std::pair<morton_t, uint> nearestCommonAncestor(const morton_t& a, const morton_t& b, const uint& aLevel, const uint& bLevel) {
+::std::pair<morton_t, uint> nearestCommonAncestor(const morton_t& a, const morton_t& b, const uint& aLevel, const uint& bLevel) {
     morton_t diff = a ^ b;  // a xor b => bit's are 1 where a and b are different
     int firstDiffPos = getMostSignigicantSetBitPos(diff);
 
     if (firstDiffPos < 0) {
         // a == b
-        return std::make_pair(a, std::max(aLevel, bLevel));
+        return ::std::make_pair(a, ::std::max(aLevel, bLevel));
     }
 
-    uint nearestCommonAncestorLevel = std::max(bitPosToLevelLookupTable[firstDiffPos] + 1, std::max(aLevel, bLevel));
+    uint nearestCommonAncestorLevel = ::std::max(bitPosToLevelLookupTable[firstDiffPos] + 1, ::std::max(aLevel, bLevel));
 
     morton_t nearestCommonAncestorBitMask = morton_t(-1) << 3 * nearestCommonAncestorLevel;
     morton_t nearestCommonAncestorCode = a & nearestCommonAncestorBitMask;
-    return std::make_pair(nearestCommonAncestorCode, nearestCommonAncestorLevel);
+    return ::std::make_pair(nearestCommonAncestorCode, nearestCommonAncestorLevel);
+}
 }

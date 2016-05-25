@@ -4,6 +4,8 @@
 #include <limits>
 #include <ostream>
 
+namespace octreebuilder {
+
 const Vector3i& Box::llf() const {
     return m_llf;
 }
@@ -47,7 +49,8 @@ bool Box::contains(const Vector3i& point) const {
            m_urb.z() >= point.z();
 }
 
-std::ostream& operator<<(std::ostream& s, const Box& b) {
+::std::ostream& operator<<(::std::ostream& s, const Box& b) {
     s << "{ llf: " << b.llf() << ", urb: " << b.urb() << " }";
     return s;
+}
 }
