@@ -26,8 +26,10 @@ set(DEFAULT_COMPILE_DEFS_RELWITHDEBINFO
 set(LINUX_COMPILE_FLAGS
     -Wno-error=unknown-pragmas
     -fvisibility=hidden
-    -pthread -pipe
+    -pthread
+    -pipe
     -fPIC
+    -fno-rtti
     -Wreturn-type
     -Wfloat-equal
     -Wcast-qual
@@ -37,20 +39,17 @@ set(LINUX_COMPILE_FLAGS
     -Wno-error=switch
     -fopenmp
 )
-# pthread       -> use pthread library
 # no-rtti       -> disable c++ rtti
-# no-exceptions -> disable exception handling
-# pipe          -> use pipes
 # fPIC          -> use position independent code
-# -Wreturn-type -Werror=return-type -> missing returns in functions and methods are handled as errors which stops the compilation
-# -Wshadow -> e.g. when a parameter is named like a member, too many warnings, disabled for now
 # -fvisibility=hidden -> only export symbols with __attribute__ ((visibility ("default")))
 
 set(LINUX_TEST_COMPILE_FLAGS
     -Wno-error=unknown-pragmas
     -fvisibility=hidden
-    -pthread -pipe
+    -pthread
+    -pipe
     -fPIC
+    -fno-rtti
     -Wreturn-type
     -Wcast-qual
     -Wcast-align
