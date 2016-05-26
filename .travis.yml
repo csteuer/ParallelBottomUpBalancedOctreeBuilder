@@ -15,13 +15,13 @@ matrix:
         - OMP_NUM_THREADS=4
     - compiler: clang
       env: 
-        - COMPILER=clang++-3.7
+        - COMPILER=clang++-3.8
         - OMP_NUM_THREADS=4
 before_install:
   - wget -nv -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
-  - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.7 main'
+  - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.8 main'
   - sudo apt-get update -qq
-  - sudo apt-get install -qq -y clang-3.7
+  - sudo apt-get install -qq -y clang-3.8
 script:
   - git clone https://github.com/nickbruun/hayai.git
   - cd hayai
