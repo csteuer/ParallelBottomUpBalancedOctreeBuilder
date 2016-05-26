@@ -1,5 +1,7 @@
 # ParallelBottomUpBalancedOctreeBuilder
 
+[![Build Status](https://travis-ci.org/ClausSteuer/ParallelBottomUpBalancedOctreeBuilder.svg?branch=master)](https://travis-ci.org/ClausSteuer/ParallelBottomUpBalancedOctreeBuilder)
+
 A library for the creation of 2:1 balanced octrees.
 Implements a parallel and a serial bottom-up algorithm.
 The parallel algorithm is a modified version of
@@ -11,7 +13,7 @@ OpenMP and Arch D. Robisons [parallel stable sort algorithm for OpenMP](https://
 ## Dependencies
 
 Requires:
- * [gcc](https://gcc.gnu.org/) 5.0+ or [clang](http://clang.llvm.org/) 3.7+
+ * [gcc](https://gcc.gnu.org/) 4.9+ or [clang](http://clang.llvm.org/) 3.7+
  * [cmake](https://cmake.org/) 2.8.12+
 
 Optional:
