@@ -3,25 +3,48 @@ dist: trusty
 language: cpp
 matrix:
   include:
-    - compiler: gcc
+    - compiler: gcc-debug
       addons:
         apt:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-5
+            - g++-4.9
       env: 
-        - COMPILER=g++-5
-        - OMP_NUM_THREADS=4
-    - compiler: clang
+        - CXX_COMPILER=g++-4.9
+        - C_COMPILER=gcc-4.9
+        - BUILD_TYPE=DEBUG
+
+    - compiler: gcc-release
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-4.9
+      env:
+        - CXX_COMPILER=g++-4.9
+        - C_COMPILER=gcc-4.9
+        - BUILD_TYPE=RELEASE
+
+    - compiler: clang-debug
       env: 
-        - COMPILER=clang++-3.8
-        - OMP_NUM_THREADS=4
+        - CXX_COMPILER=clang++-3.7
+        - C_COMPILER=clang-3.7
+        - BUILD_TYPE=DEBUG
+
+    - compiler: clang-release
+      env:
+        - CXX_COMPILER=clang++-3.7
+        - C_COMPILER=clang-3.7
+        - BUILD_TYPE=RELEASE
+env:
+    - OMP_NUM_THREADS=4
 before_install:
   - wget -nv -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
-  - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.8 main'
+  - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.7 main'
   - sudo apt-get update -qq
-  - sudo apt-get install -qq -y clang-3.8 libiomp-dev
+  - sudo apt-get install -qq -y clang-3.7 libiomp-dev
 script:
   - git clone https://github.com/nickbruun/hayai.git
   - cd hayai
@@ -33,7 +56,7 @@ script:
   - git clone https://github.com/google/googletest.git
   - mkdir build
   - cd build
-  - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON -Dhayai_DIR=../../hayai/build ..
+  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=$CXX_COMPILER -DCMAKE_C_COMPILER=$C_COMPILER -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON -Dhayai_DIR=../../hayai/build ..
   - make
   - octreebuilder/unittests/octreebuilder-unittests
   - octreebuilder/integrationtests/octreebuilder-integrationtests  
