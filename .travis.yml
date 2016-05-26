@@ -25,6 +25,8 @@ matrix:
       env: 
         - COMPILER=clang++-3.7
         - OMP_NUM_THREADS=4
+before_install:
+  - wget -nv -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
 script:
   - git clone https://github.com/nickbruun/hayai.git
   - cd hayai

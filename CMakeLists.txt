@@ -196,6 +196,6 @@ if(DOXYGEN_FOUND)
         ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/doxygen_conf
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc
         COMMENT "Generating API documentation with Doxygen" VERBATIM
-        SOURCES doxygen_conf.in README.md
+        SOURCES doxygen_conf.in README.md .travis.yml
     )
 endif(DOXYGEN_FOUND)
