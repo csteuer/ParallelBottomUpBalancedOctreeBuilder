@@ -84,7 +84,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         -Wno-padded
     )
 
-    set(LINUX_LINKER_FLAGS "-fopenmp=libomp")
+    set(LINUX_LINKER_FLAGS "-fopenmp=libiomp5")
 endif()
 
 
