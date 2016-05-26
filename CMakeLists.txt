@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 cmake_policy(SET CMP0020 NEW)
 cmake_policy(SET CMP0043 OLD) # Allow definitions of compile flags via COMPILE_DEFINITIONS_<CONFIG> target properties

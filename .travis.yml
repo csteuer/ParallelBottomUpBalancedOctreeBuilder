@@ -1,4 +1,5 @@
-dist: precise
+sudo: required
+dist: trusty
 language: cpp
 matrix:
   include:
@@ -13,16 +14,14 @@ matrix:
         - COMPILER=g++-5
         - OMP_NUM_THREADS=4
     - compiler: clang
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-          packages:
-            - clang-3.7
       env: 
         - COMPILER=clang++-3.7
         - OMP_NUM_THREADS=4
+before_install:
+  - wget -nv -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
+  - sudo apt-add-repository -y 'deb http://llvm.org/apt/trusty llvm-toolchain-trusty-3.7 main'
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq -y clang-3.7
 script:
   - git clone https://github.com/nickbruun/hayai.git
   - cd hayai
