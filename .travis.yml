@@ -17,10 +17,9 @@ matrix:
         apt:
           sources:
             - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-3.7
+            - llvm-toolchain-precise-3.7
           packages:
             - clang-3.7
-            - libiomp-dev
       env: 
         - COMPILER=clang++-3.7
         - OMP_NUM_THREADS=4
@@ -35,7 +34,7 @@ script:
   - git clone https://github.com/google/googletest.git
   - mkdir build
   - cd build
-  - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON -Dhayai_DIR=../../hayai/build ..
+  - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON -DLINK_INTEL_OPENMP=OFF -Dhayai_DIR=../../hayai/build ..
   - make
   - octreebuilder/unittests/octreebuilder-unittests
   - octreebuilder/integrationtests/octreebuilder-integrationtests  

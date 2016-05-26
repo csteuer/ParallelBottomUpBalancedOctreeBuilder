@@ -73,6 +73,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(LINUX_LINKER_FLAGS "-fopenmp")
 
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+
+    option(LINK_INTEL_OPENMP "When using clang, link intels libiomp5 library instead of GNU's libgomp" ON)
+
     # clang
     set(LINUX_COMPILE_FLAGS
         ${LINUX_COMPILE_FLAGS}
@@ -83,7 +86,11 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         -Wno-padded
     )
 
-    set(LINUX_LINKER_FLAGS "-fopenmp=libiomp5")
+    if (LINK_INTEL_OPENMP)
+        set(LINUX_LINKER_FLAGS "-fopenmp=libiomp5")
+    else()
+        set(LINUX_LINKER_FLAGS "-fopenmp=libomp")
+    endif()
 endif()
 
 
