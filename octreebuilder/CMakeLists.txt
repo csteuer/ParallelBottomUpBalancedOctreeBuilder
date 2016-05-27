@@ -45,7 +45,6 @@ set(HEADER
 
     build_options.h.in
     linearoctree.h
-    logging.h
     mortoncode_utils.h
     octantid.h
     octree_impl.h

@@ -11,8 +11,7 @@
 #include <omp.h>
 
 #include "perfcounter.h"
-#include "logging.h"
-#include <iomanip>
+#include <iostream>
 
 namespace octreebuilder {
 
@@ -517,31 +516,31 @@ LinearOctree createBalancedOctreeParallel(const OctantID& root, const ::std::vec
     perfCounter.start();
     Partition computedPartition = computePartition(root, levelZeroLeafs, numThreads);
 
-    LOG_PROF(::std::left << ::std::setw(30) << "Created partition: " << perfCounter);
+    LOG_PROF("Created partition: " << perfCounter);
 
     perfCounter.start();
     parallelCreateBalancedSubtrees(computedPartition.partitions, maxLevel);
-    LOG_PROF(::std::left << ::std::setw(30) << "Created balanced subtrees: " << perfCounter);
+    LOG_PROF("Created balanced subtrees: " << perfCounter);
 
     perfCounter.start();
     ::std::vector<::std::vector<OctantID>> boundaryOctantsPerPartition = parallelCollectBoundaryLeafs(computedPartition);
-    LOG_PROF(::std::left << ::std::setw(30) << "Collected boundary leafs: " << perfCounter);
+    LOG_PROF("Collected boundary leafs: " << perfCounter);
 
     perfCounter.start();
     LinearOctree boundaryOctantsTree = createBoundaryOctantsTree(boundaryOctantsPerPartition, computedPartition.root);
-    LOG_PROF(::std::left << ::std::setw(30) << "Created boundary tree: " << perfCounter);
+    LOG_PROF("Created boundary tree: " << perfCounter);
 
     perfCounter.start();
     LinearOctree balancedBoundaryTree = balanceTree(boundaryOctantsTree);
-    LOG_PROF(::std::left << ::std::setw(30) << "Balanced boundary tree: " << perfCounter);
+    LOG_PROF("Balanced boundary tree: " << perfCounter);
 
     perfCounter.start();
     ::std::vector<OctantID> leafsOfAllPartitions = flattenPartitions(computedPartition.partitions);
-    LOG_PROF(::std::left << ::std::setw(30) << "Flatten boundary tree: " << perfCounter);
+    LOG_PROF("Flatten boundary tree: " << perfCounter);
 
     perfCounter.start();
     LinearOctree result = mergePartitionsAndBalancedBoundaryTree(leafsOfAllPartitions, balancedBoundaryTree);
-    LOG_PROF(::std::left << ::std::setw(30) << "Merged boundary tree: " << perfCounter);
+    LOG_PROF("Merged boundary tree: " << perfCounter);
 
     return result;
 }

@@ -12,8 +12,6 @@
 #include <assert.h>
 
 #include "perfcounter.h"
-#include "logging.h"
-#include <iomanip>
 
 namespace octreebuilder {
 
@@ -44,15 +42,15 @@ morton_t ParallelOctreeBuilder::addLevelZeroLeaf(const Vector3i& c) {
     for (morton_t mcode : m_levelZeroLeafsSet) {
         levelZeroLeafs.push_back(OctantID(mcode, 0));
     }
-    LOG_PROF(::std::left << ::std::setw(30) << "Create level zero leafs list: " << perfCounter);
+    LOG_PROF("Create level zero leafs list: " << perfCounter);
 
     perfCounter.start();
     pss::parallel_stable_sort(levelZeroLeafs.begin(), levelZeroLeafs.end());
-    LOG_PROF(::std::left << ::std::setw(30) << "Sort level zero leafs list: " << perfCounter);
+    LOG_PROF("Sort level zero leafs list: " << perfCounter);
 
     perfCounter.start();
     LinearOctree balancedOctree = createBalancedOctreeParallel(root, levelZeroLeafs, omp_get_max_threads(), maxLevel());
-    LOG_PROF(::std::left << ::std::setw(30) << "Created octree: " << perfCounter);
+    LOG_PROF("Created octree: " << perfCounter);
 
     ::std::unique_ptr<Octree> result(new OctreeImpl(::std::move(balancedOctree)));
     return result;

@@ -5,8 +5,7 @@
 #include "octree_utils.h"
 
 #include "perfcounter.h"
-#include "logging.h"
-#include <iomanip>
+#include <iostream>
 
 namespace octreebuilder {
 
@@ -38,11 +37,11 @@ morton_t SequentialOctreeBuilder::addLevelZeroLeaf(const Vector3i& c) {
         linearOctree.insert(OctantID(mcode, 0));
     }
 
-    LOG_PROF(::std::left << ::std::setw(30) << "Created initial tree: " << perfCounter);
+    LOG_PROF("Created initial tree: " << perfCounter);
 
     perfCounter.start();
     createBalancedSubtree(linearOctree, maxLevel());
-    LOG_PROF(::std::left << ::std::setw(30) << "Created balanced tree: " << perfCounter);
+    LOG_PROF("Created balanced tree: " << perfCounter);
 
     return ::std::unique_ptr<Octree>(new OctreeImpl(::std::move(linearOctree)));
 }

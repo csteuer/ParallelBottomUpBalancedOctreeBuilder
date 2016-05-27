@@ -1,22 +1,18 @@
 #include "octree_impl.h"
 
-#include "octree.h"
-
 #include <cmath>
 #include <algorithm>
 #include <functional>
-
-#include "perfcounter.h"
-#include "logging.h"
-#include <iomanip>
-
 #include <atomic>
 
+#include "octree.h"
 #include "box.h"
-
 #include "linearoctree.h"
 #include "octantid.h"
 #include "mortoncode_utils.h"
+
+#include "perfcounter.h"
+#include <iostream>
 
 namespace octreebuilder {
 
@@ -54,13 +50,13 @@ OctreeImpl::OctreeImpl(LinearOctree&& linearOctree) : m_bounding(Box(getMaxXYZFo
             m_tree.at(i).reserve(numLeafsPerLevel.at(i));
         }
     }
-    LOG_PROF(::std::left << ::std::setw(30) << "Allocated set tree: " << perfCounter);
+    LOG_PROF("Allocated set tree: " << perfCounter);
 
     perfCounter.start();
     for (const OctantID& node : linearOctree.leafs()) {
         m_tree.at(node.level()).insert(node.mcode());
     }
-    LOG_PROF(::std::left << ::std::setw(30) << "Filled set tree: " << perfCounter);
+    LOG_PROF("Filled set tree: " << perfCounter);
 
     m_linearTree = ::std::move(linearOctree);
 }
@@ -187,8 +183,6 @@ OctreeNode OctreeImpl::tryGetNodeAt(const Vector3i& llf, uint level) const {
             // a neighbour must exist in a valid tree (we have checked above that n is not at the boundary)... since
             // neither a neighbour on the same level nor on the parent level exists there must be
             // 4 neighbours at the child level
-            LOG_ERROR("Node " << n << " of space filling octree " << *this << " has no neighbour at same or +1/-1 level for face " << sharedFace
-                              << " but is not a boundary node for that face. Failed last possible test for neighbour of child level: " << childNode);
             throw ::std::runtime_error("Invalid parameter 'n' or invalid octree.");
         }
 

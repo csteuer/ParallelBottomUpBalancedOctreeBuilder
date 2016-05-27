@@ -25,4 +25,14 @@ private:
 };
 
 ::std::ostream& operator<<(::std::ostream& os, const PerfCounter& pc);
+
+::std::ostream& logPerf();
+
+#ifdef PROFILING_ENABLED
+    #define LOG_PROF(msg) logPerf() << msg << '\n'
+#else
+    #define LOG_PROF(msg)
+#endif
+
 }
+

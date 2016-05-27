@@ -1,11 +1,14 @@
 #include "perfcounter.h"
 
 #include <iostream>
+#include <iomanip>
 
 namespace octreebuilder {
 
 PerfCounter::PerfCounter()
-    : m_start(::std::chrono::high_resolution_clock::time_point::max()), m_sumDurations(::std::chrono::high_resolution_clock::duration::zero()), m_stopped(true) {
+    : m_start(::std::chrono::high_resolution_clock::time_point::max()),
+      m_sumDurations(::std::chrono::high_resolution_clock::duration::zero()),
+      m_stopped(true) {
 }
 
 void PerfCounter::start() {
@@ -42,5 +45,9 @@ void PerfCounter::resume() {
 
     os << ::std::chrono::duration_cast<::std::chrono::milliseconds>(elapsed).count() << " ms";
     return os;
+}
+
+std::ostream& logPerf() {
+    return std::cout << ::std::left << ::std::setw(30);
 }
 }
