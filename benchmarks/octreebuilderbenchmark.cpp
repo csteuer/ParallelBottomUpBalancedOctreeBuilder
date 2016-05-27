@@ -18,7 +18,7 @@ using namespace octreebuilder;
 constexpr size_t SEED = 12492;
 constexpr size_t NUM_INPUT_LEAFS = 10000;
 constexpr coord_t MAX_COORD = 1000;
-constexpr Vector3i MAX_XYZ = Vector3i(MAX_COORD);
+const Vector3i MAX_XYZ = Vector3i(MAX_COORD);
 
 constexpr coord_t squared(coord_t value) {
     return value * value;
@@ -26,8 +26,8 @@ constexpr coord_t squared(coord_t value) {
 
 constexpr coord_t SPHERE_RADIUS = 200;
 constexpr coord_t SPHERE_MARGIN = 50;
-constexpr Box SPHERE_BB(Vector3i(SPHERE_MARGIN), Vector3i((2 * SPHERE_RADIUS) + SPHERE_MARGIN));
-constexpr Vector3i SPHERE_MAX_XYZ(2 * SPHERE_MARGIN + 2 * SPHERE_RADIUS);
+const Box SPHERE_BB(Vector3i(SPHERE_MARGIN), Vector3i((2 * SPHERE_RADIUS) + SPHERE_MARGIN));
+const Vector3i SPHERE_MAX_XYZ(2 * SPHERE_MARGIN + 2 * SPHERE_RADIUS);
 constexpr coord_t SPHERE_HALF_SURFACE_THICKNESS = 1;
 constexpr coord_t SPHERE_INNER_SQUARED_SURFACE_DISTANCE = squared(SPHERE_RADIUS - SPHERE_HALF_SURFACE_THICKNESS);
 constexpr coord_t SPHERE_OUTER_SQUARED_SURFACE_DISTANCE = squared(SPHERE_RADIUS + SPHERE_HALF_SURFACE_THICKNESS);

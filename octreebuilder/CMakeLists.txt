@@ -4,6 +4,12 @@ set(target octreebuilder)
 # Lib Setup
 ##########################################################################################################
 
+set(OCTREEBUILDER_USE_SSE ${BUILD_WITH_SSE})
+set(NO_EDIT "AUTO GENERATED. DO NOT EDIT!")
+
+configure_file(build_options.h.in ${CMAKE_BINARY_DIR}/include/build_options.h)
+install(FILES ${CMAKE_BINARY_DIR}/include/build_options.h DESTINATION ${INSTALL_INCLUDE_DIR}/octreebuilder)
+
 set(SOURCES
     octree.cpp
     octreebuilder.cpp
@@ -37,6 +43,7 @@ set(PUBLIC_HEADER
 set(HEADER
     ${PUBLIC_HEADER}
 
+    build_options.h.in
     linearoctree.h
     logging.h
     mortoncode_utils.h

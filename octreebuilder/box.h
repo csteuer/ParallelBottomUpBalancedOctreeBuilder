@@ -10,12 +10,9 @@ namespace octreebuilder {
 
 class OCTREEBUILDER_API Box {
 public:
-    constexpr Box() : m_llf(Vector3i(::std::numeric_limits<coord_t>::max())), m_urb(::std::numeric_limits<coord_t>::min()) {
-    }
-    constexpr Box(const Vector3i& llf, const Vector3i& urb) : m_llf(llf), m_urb(urb) {
-    }
-    explicit constexpr Box(const Vector3i& urb) : m_llf(Vector3i(0)), m_urb(urb) {
-    }
+    Box();
+    Box(const Vector3i& llf, const Vector3i& urb);
+    explicit Box(const Vector3i& urb);
 
     const Vector3i& llf() const;
     const Vector3i& urb() const;
@@ -41,5 +38,5 @@ private:
     Vector3i m_urb;
 };
 
-OCTREEBUILDER_API ::std::ostream& operator<<(::std::ostream& s, const Box& b);
+OCTREEBUILDER_API::std::ostream& operator<<(::std::ostream& s, const Box& b);
 }

@@ -15,6 +15,7 @@ matrix:
         - C_COMPILER=gcc-4.9
         - BUILD_TYPE=DEBUG
         - OMP_NUM_THREADS=4
+        - USE_SSE=OFF
 
     - compiler: gcc-release
       addons:
@@ -28,6 +29,7 @@ matrix:
         - C_COMPILER=gcc-4.9
         - BUILD_TYPE=RELEASE
         - OMP_NUM_THREADS=4
+        - USE_SSE=ON
 
     - compiler: clang-debug
       env: 
@@ -35,6 +37,7 @@ matrix:
         - C_COMPILER=clang-3.7
         - BUILD_TYPE=DEBUG
         - OMP_NUM_THREADS=4
+        - USE_SSE=OFF
 
     - compiler: clang-release
       env:
@@ -42,6 +45,7 @@ matrix:
         - C_COMPILER=clang-3.7
         - BUILD_TYPE=RELEASE
         - OMP_NUM_THREADS=4
+        - USE_SSE=ON
 
 before_install:
   - wget -nv -O - http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -59,7 +63,7 @@ script:
   - git clone https://github.com/google/googletest.git
   - mkdir build
   - cd build
-  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCMAKE_CXX_COMPILER=$CXX_COMPILER -DCMAKE_C_COMPILER=$C_COMPILER -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON -Dhayai_DIR=../../hayai/build ..
+  - cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBUILD_WITH_SSE=$USE_SSE -DCMAKE_CXX_COMPILER=$CXX_COMPILER -DCMAKE_C_COMPILER=$C_COMPILER -DBUILD_TESTS=ON -DBUILD_BENCHMARKS=ON -Dhayai_DIR=../../hayai/build ..
   - make
   - octreebuilder/unittests/octreebuilder-unittests
   - octreebuilder/integrationtests/octreebuilder-integrationtests  

@@ -13,6 +13,7 @@ set(sources
     octantidtest.cpp  
     octree_utilstest.cpp
     vector_utilstest.cpp
+    vectortest.cpp
 )
 
 add_executable(${target} ${sources})

@@ -1,0 +1,7 @@
+#pragma once
+
+/*
+ * @NO_EDIT@
+ */
+
+#cmakedefine OCTREEBUILDER_USE_SSE

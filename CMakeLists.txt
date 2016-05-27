@@ -38,6 +38,8 @@ set(CMAKE_MINSIZEREL_POSTFIX "_small")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
+include_directories(${CMAKE_BINARY_DIR}/include)
+
 find_package(Doxygen)
 
 ##########################################################################################################
@@ -63,6 +65,8 @@ ENDIF()
 ##########################################################################################################
 # Profiling & Performance optimization
 ##########################################################################################################
+
+option(BUILD_WITH_SSE "Use Streaming SIMD Extensions (SSE) for faster math" ON)
 
 option(ENABLE_PROFILING "Links against google performance tools (Gperftools) to enable profiling." OFF)
 if (ENABLE_PROFILING)

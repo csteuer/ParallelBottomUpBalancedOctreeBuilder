@@ -64,14 +64,6 @@ bool OctantID::isDecendantOf(const OctantID& possibleAncestor) const {
     return isMortonCodeDecendant(m_mcode, m_level, possibleAncestor.m_mcode, possibleAncestor.m_level);
 }
 
-constexpr ::std::array<Vector3i, 26> neighbour_offsets = {
-    {Vector3i(-1, -1, -1), Vector3i(0, -1, -1), Vector3i(1, -1, -1), Vector3i(-1, 0, -1), Vector3i(0, 0, -1),
-     Vector3i(1, 0, -1), Vector3i(-1, 1, -1), Vector3i(0, 1, -1), Vector3i(1, 1, -1), Vector3i(-1, -1, 0),
-     Vector3i(0, -1, 0), Vector3i(1, -1, 0), Vector3i(-1, 0, 0), Vector3i(1, 0, 0), Vector3i(-1, 1, 0),
-     Vector3i(0, 1, 0), Vector3i(1, 1, 0), Vector3i(-1, -1, 1), Vector3i(0, -1, 1), Vector3i(1, -1, 1),
-     Vector3i(-1, 0, 1), Vector3i(0, 0, 1), Vector3i(1, 0, 1), Vector3i(-1, 1, 1), Vector3i(0, 1, 1),
-     Vector3i(1, 1, 1)}};
-
 ::std::vector<OctantID> OctantID::potentialNeighbours(const LinearOctree& octree) const {
     ::std::vector<OctantID> result;
 
@@ -85,7 +77,11 @@ constexpr ::std::array<Vector3i, 26> neighbour_offsets = {
 
     Vector3i thisOctantLLF = this->coord();
 
-    for (const Vector3i& offset : neighbour_offsets) {
+    for (const Vector3i& offset :
+         {Vector3i(-1, -1, -1), Vector3i(0, -1, -1), Vector3i(1, -1, -1), Vector3i(-1, 0, -1), Vector3i(0, 0, -1), Vector3i(1, 0, -1), Vector3i(-1, 1, -1),
+          Vector3i(0, 1, -1), Vector3i(1, 1, -1), Vector3i(-1, -1, 0), Vector3i(0, -1, 0), Vector3i(1, -1, 0), Vector3i(-1, 0, 0), Vector3i(1, 0, 0),
+          Vector3i(-1, 1, 0), Vector3i(0, 1, 0), Vector3i(1, 1, 0), Vector3i(-1, -1, 1), Vector3i(0, -1, 1), Vector3i(1, -1, 1), Vector3i(-1, 0, 1),
+          Vector3i(0, 0, 1), Vector3i(1, 0, 1), Vector3i(-1, 1, 1), Vector3i(0, 1, 1), Vector3i(1, 1, 1)}) {
         Vector3i neighbourLLF = thisOctantLLF + offset * octantSize;
         OctantID neighbour(neighbourLLF, m_level);
 
@@ -112,7 +108,11 @@ constexpr ::std::array<Vector3i, 26> neighbour_offsets = {
 
     OctantID thisOctantsParent = this->parent();
 
-    for (const Vector3i& offset : neighbour_offsets) {
+    for (const Vector3i& offset :
+         {Vector3i(-1, -1, -1), Vector3i(0, -1, -1), Vector3i(1, -1, -1), Vector3i(-1, 0, -1), Vector3i(0, 0, -1), Vector3i(1, 0, -1), Vector3i(-1, 1, -1),
+          Vector3i(0, 1, -1), Vector3i(1, 1, -1), Vector3i(-1, -1, 0), Vector3i(0, -1, 0), Vector3i(1, -1, 0), Vector3i(-1, 0, 0), Vector3i(1, 0, 0),
+          Vector3i(-1, 1, 0), Vector3i(0, 1, 0), Vector3i(1, 1, 0), Vector3i(-1, -1, 1), Vector3i(0, -1, 1), Vector3i(1, -1, 1), Vector3i(-1, 0, 1),
+          Vector3i(0, 0, 1), Vector3i(1, 0, 1), Vector3i(-1, 1, 1), Vector3i(0, 1, 1), Vector3i(1, 1, 1)}) {
         Vector3i neighbourLLF = thisOctantLLF + offset * octantSize;
         OctantID neighbour(neighbourLLF, m_level);
 
@@ -150,16 +150,14 @@ bool OctantID::isBoundaryOctant(const Vector3i& blockLLF, const Vector3i& blockU
     return componentwiseAEqBAndNotEqC(octantLLF, blockLLF, treeLLF) || componentwiseAEqBAndNotEqC(octantURB, blockURB, treeURB);
 }
 
-constexpr ::std::array<Vector3i, 8> searchCornerOffsets{{Vector3i(0, 0, 0), Vector3i(-1, 0, 0), Vector3i(0, -1, 0), Vector3i(-1, -1, 0), Vector3i(0, 0, -1),
-                                                       Vector3i(-1, 0, -1), Vector3i(0, -1, -1), Vector3i(-1, -1, -1)}};
-
 ::std::vector<OctantID> OctantID::getSearchKeys(const LinearOctree& octree) const {
     ::std::vector<OctantID> searchKeys;
     searchKeys.reserve(7);
 
     Vector3i searchCorner = getSearchCorner(this->mcode(), this->level());
 
-    for (const Vector3i& coord : searchCornerOffsets) {
+    for (const Vector3i& coord : {Vector3i(0, 0, 0), Vector3i(-1, 0, 0), Vector3i(0, -1, 0), Vector3i(-1, -1, 0), Vector3i(0, 0, -1), Vector3i(-1, 0, -1),
+                                  Vector3i(0, -1, -1), Vector3i(-1, -1, -1)}) {
         Vector3i searchKeyLLF = searchCorner + coord;
         OctantID searchKey(searchKeyLLF, 0);
 
