@@ -8,8 +8,8 @@ set(PROJECTNAME ParallelBottomUpBalancedOctreeBuilder)
 
 project(${PROJECTNAME})
 
-set(${PROJECTNAME}_VERSION_MAJOR 0)
-set(${PROJECTNAME}_VERSION_MINOR 1)
+set(${PROJECTNAME}_VERSION_MAJOR 1)
+set(${PROJECTNAME}_VERSION_MINOR 0)
 set(${PROJECTNAME}_VERSION_PATCH 0)
 set(${PROJECTNAME}_VERSION ${${PROJECTNAME}_VERSION_MAJOR}.${${PROJECTNAME}_VERSION_MINOR}.${${PROJECTNAME}_VERSION_PATCH})
 
@@ -110,7 +110,7 @@ ENDIF()
 ##########################################################################################################
 
 # Default cmake variable that is overwritten by gmock/gtest
-option(BUILD_SHARED_LIBS "Build shared octreebuilder/gmock/gtest libraries (builds static libraries otherwise)." OFF)
+option(BUILD_SHARED_LIBS "Build shared octreebuilder library (builds static libraries otherwise)." OFF)
 
 ##########################################################################################################
 # Install definitions
