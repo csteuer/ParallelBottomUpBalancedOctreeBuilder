@@ -24,19 +24,16 @@ set(DEFAULT_COMPILE_DEFS_RELWITHDEBINFO
 )
 
 set(LINUX_COMPILE_FLAGS
-    -Wno-error=unknown-pragmas
     -fvisibility=hidden
     -pthread
     -pipe
     -fPIC
     -fno-rtti
-    -Wreturn-type
-    -Wfloat-equal
-    -Wcast-qual
-    -Wcast-align
     -Wconversion
+    -Wall
+    -Wextra
+    -pedantic
     -Werror
-    -Wno-error=switch
     -fopenmp
 )
 # no-rtti       -> disable c++ rtti
@@ -44,19 +41,15 @@ set(LINUX_COMPILE_FLAGS
 # -fvisibility=hidden -> only export symbols with __attribute__ ((visibility ("default")))
 
 set(LINUX_TEST_COMPILE_FLAGS
-    -Wno-error=unknown-pragmas
     -fvisibility=hidden
     -pthread
     -pipe
     -fPIC
     -fno-rtti
-    -Wreturn-type
-    -Wcast-qual
-    -Wcast-align
     -Werror
     -Wall
+    -Wextra
     -pedantic
-    -Wno-error=switch
     -Wno-sign-compare
     -fopenmp
 )
@@ -71,8 +64,9 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(LINUX_COMPILE_FLAGS
         ${LINUX_COMPILE_FLAGS}
         -Wtrampolines
-        -Wall
-        -pedantic
+        -Wfloat-equal
+        -Wcast-qual
+        -Wcast-align
     )
 
     set(LINUX_LINKER_FLAGS "-fopenmp")
