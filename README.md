@@ -7,7 +7,7 @@ Implements a parallel and a serial bottom-up algorithm.
 The parallel algorithm is a modified version of
 [Bottom-up construction and 2: 1 balance refinement of linear octrees in parallel](http://epubs.siam.org/doi/abs/10.1137/070681727) by Sundar et al.
 
-Its optimized for shared memory systems instead of distributed memory systems and uses
+Its optimized for shared memory systems instead of distributed memory systems, using
 OpenMP and Arch D. Robisons [parallel stable sort algorithm for OpenMP](https://software.intel.com/en-us/articles/a-parallel-stable-sort-using-c11-for-tbb-cilk-plus-and-openmp).
 
 ## Dependencies
